@@ -17,7 +17,9 @@ const createNew = async (req, res, next) => {
    */
 
   const correctCondition = Joi.object({
+    // trim().strict() phải đi chung vs nhau
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
+      // custom lỗi
       'any.required': 'Title is required (duyphucdev)',
       'string.empty': 'Title is not allowed to be empty (duyphucdev)',
       'string.min': 'Tối thiểu 3 ký tự',
@@ -28,14 +30,12 @@ const createNew = async (req, res, next) => {
   })
 
   try {
-    console.log('req.body', req.body)
-
-    // abortEarly mặc định là true (là nó gặp lỗi tới đâu log ra tới đó) video 52
+    // abortEarly (hủy bỏ sớm) :mặc định là true (là nó gặp lỗi tới đâu log ra tới đó) video 52
     // còn false là nó sẽ log ra hết lỗi 1 lần
     await correctCondition.validateAsync(req.body, { abortEarly: false })
-    // next()
-
-    res.status(StatusCodes.CREATED).json({ message: 'POST from Validation: API create new board' })
+    // Validate hợp lệ, gửi request đi tiếp tới Controller (boardController.createNew file boardRoute line 18)
+    next()
+    // res.status(StatusCodes.CREATED).json({ message: 'POST from Validation: API create new board' })
   } catch (error) {
     console.log(error)
     res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
