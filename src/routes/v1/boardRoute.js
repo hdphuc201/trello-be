@@ -17,4 +17,9 @@ Router.route('/')
   })
   .post(boardValidation.createNew, boardController.createNew)
 
+Router.route('/:id')
+  // từ Router -> Controler (tùy TH, kh nhất thiết phải qua validate vì ở đây nó chỉ cần truyền id nên kh cần thiết qua validate)
+  .get(boardController.getDetails)
+  .put() // update
+
 export const boardRoute = Router
