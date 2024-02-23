@@ -7,14 +7,17 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
+import { BOARD_TYPES } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { columnModel } from './columnModel'
+import { cardModel } from './cardModel'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(3).max(50).trim().strict(),
   slug: Joi.string().required().min(3).trim().strict(),
   description: Joi.string().required().min(3).max(256).trim().strict(),
-
+  type: Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required(),
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé, (lúc quay video số 57 mình quên nhưng sang đầu video số 58 sẽ có nhắc lại về cái này.)
   columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 
@@ -58,13 +61,47 @@ const getDetails = async (id) => {
   // Hôm nay tạm thời giống hệt hàm findOneById - và sẽ update phần aggregate tiep1 ở những video tới 
   try {
     console.log(id)
+    // const result = await GET_DB()
+    //   .collection(BOARD_COLLECTION_NAME)
+    //   .findOne({
+    //     // id truyền vào phải là 1 Object
+    //     _id: new ObjectId(id)
+    //   })
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
-      .findOne({
-        // id truyền vào phải là 1 Object
-        _id: new ObjectId(id)
-      })
-    return result
+      .aggregate([
+        {
+          $match: {
+          // tìm Id đồng thời _destroy phải là false (nếu là true thì trả về {})
+            _id: new ObjectId(id),
+            _destroy: false
+          }
+        },
+        {
+          $lookup:{
+            // đang đứng ở board tìm tới colum
+            from: columnModel.COLUMN_COLLECTION_NAME,
+            // là cái _id của cái board hiện tại
+            localField: '_id',
+            // tìm tới cái boardId của column
+            foreignField: 'boardId',
+            as: 'columns'
+          }
+        },
+        {
+          $lookup:{
+            from: cardModel.CARD_COLLECTION_NAME,
+            localField: '_id',
+            foreignField: 'boardId',
+            as: 'cards'
+          }
+        }
+      ]).toArray()
+    // aggregate nó sẽ trả về mảng => mục đích chỉ lấy 1 cái board
+    // => thì nó sẽ luôn luôn là mảng có 1 phần tử
+    // => nên sẽ return về phần tử đầu tiên result[0] - còn nếu kh có thì trả về JSON Object rỗng {}
+    console.log(result);
+    return result[0] || {}
   } catch (error) {
     throw new Error(error)
   }
@@ -77,3 +114,4 @@ export const boardModel = {
   findOneById,
   getDetails
 }
+
