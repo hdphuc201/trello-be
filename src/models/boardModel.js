@@ -99,9 +99,9 @@ const getDetails = async (id) => {
       ]).toArray()
     // aggregate nó sẽ trả về mảng => mục đích chỉ lấy 1 cái board
     // => thì nó sẽ luôn luôn là mảng có 1 phần tử
-    // => nên sẽ return về phần tử đầu tiên result[0] - còn nếu kh có thì trả về JSON Object rỗng {}
+    // => nên sẽ return về phần tử đầu tiên result[0] - còn nếu kh có thì trả về null
     console.log(result);
-    return result[0] || {}
+    return result[0] || null
   } catch (error) {
     throw new Error(error)
   }
