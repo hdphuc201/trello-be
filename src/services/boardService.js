@@ -6,9 +6,9 @@
 
 import { boardModel } from '~/models/boardModel'
 import { slugify } from '~/utils/formatters'
-import { StatusCodes } from 'http-status-codes';
-import ApiError from '~/utils/ApiError';
-import { cloneDeep } from 'lodash';
+import { StatusCodes } from 'http-status-codes'
+import ApiError from '~/utils/ApiError'
+import { cloneDeep } from 'lodash'
 
 const createNew = async (reqBody) => {
   try {
@@ -34,12 +34,12 @@ const createNew = async (reqBody) => {
   }
 }
 
-
 const getDetails = async (boardId) => {
   try {
     // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
     const board = await boardModel.getDetails(boardId)
 
+    // board == null
     if (!board) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
     }
@@ -50,15 +50,14 @@ const getDetails = async (boardId) => {
     const resBoard = cloneDeep(board)
 
     // B2: Đưa card về đúng column của nó
-    resBoard.columns.forEach(column => {
+    resBoard.columns.forEach((column) => {
       // logic chỗ này hay nha
       // phải toString rồi mới so sánh (vì nó đang ở dạng ObjectId (check trong MongoDB Compass))
       // C1: Cách đơn giản hơn là conver ObjectId về string bằng hàm toString() của JavaScipt
-      column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
+      column.cards = resBoard.cards.filter((card) => card.columnId.toString() === column._id.toString())
 
       // C2: Cách dùng equals này là bởi vì chúng ta hiểu ObjectId trong MongoDB có support method .equals
       // column.cards = resBoard.cards.filter(card => card.columnId.equals(column._id))
-
     })
 
     // B3: xóa mảng cards khỏi board ban đầu
