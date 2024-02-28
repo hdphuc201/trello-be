@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Updated by trungquandev.com's author on Oct 8 2023
  * YouTube: https://youtube.com/@trungquandev
@@ -5,6 +6,8 @@
  */
 
 import Joi from 'joi'
+import { ObjectId } from 'mongodb'
+import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 // Define Collection (name & schema)
@@ -21,7 +24,47 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
+const validateBeforeCreate = async (data) => {
+  return await CARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
+}
+
+const createNew = async (data) => {
+  try {
+    const validData = await validateBeforeCreate(data)
+    console.log('validData', validData)
+
+    // biến đổi 1 số dữ liệu liên quan tới ObjectId chuẩn chỉnh
+    const newCardToAdd = {
+      ...validData,
+      boardId: new ObjectId(validData.boardId),
+      columnId: new ObjectId(validData.columnId)
+    }
+
+    const createdCard = await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(newCardToAdd)
+    return createdCard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const findOneById = async (id) => {
+  try {
+    console.log(id)
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOne({
+        // id truyền vào phải là 1 Object
+        _id: new ObjectId(id)
+      })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
-  CARD_COLLECTION_SCHEMA
+  CARD_COLLECTION_SCHEMA,
+  createNew,
+  findOneById
 }
