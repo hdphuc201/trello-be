@@ -69,7 +69,24 @@ const getDetails = async (boardId) => {
     throw new Error(error)
   }
 }
+
+const update = async (boardId, reqBody) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updateAt: Date.now()
+    }
+    // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
+    const updatedBoard = await boardModel.update(boardId, updateData)
+
+    // trả kết quả về trong Service, luôn phải có return
+    return updatedBoard
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardService = {
   createNew,
-  getDetails
+  getDetails,
+  update
 }
