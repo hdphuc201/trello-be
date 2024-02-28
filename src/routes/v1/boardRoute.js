@@ -20,6 +20,6 @@ Router.route('/')
 Router.route('/:id')
   // từ Router -> Controler (tùy TH, kh nhất thiết phải qua validate vì ở đây nó chỉ cần truyền id nên kh cần thiết qua validate)
   .get(boardController.getDetails)
-  .put() // update
+  .put(boardValidation.update, boardController.update)
 
 export const boardRoute = Router
