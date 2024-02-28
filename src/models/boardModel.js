@@ -58,7 +58,7 @@ const findOneById = async (id) => {
 
 // Query tổng hợp (aggregate) để lấy toàn bộ Columns và Cards thuộc về Board
 const getDetails = async (id) => {
-  // Hôm nay tạm thời giống hệt hàm findOneById - và sẽ update phần aggregate tiep1 ở những video tới 
+  // Hôm nay tạm thời giống hệt hàm findOneById - và sẽ update phần aggregate tiep1 ở những video tới
   try {
     console.log(id)
     // const result = await GET_DB()
@@ -72,13 +72,13 @@ const getDetails = async (id) => {
       .aggregate([
         {
           $match: {
-          // tìm Id đồng thời _destroy phải là false (nếu là true thì trả về {})
+            // tìm Id đồng thời _destroy phải là false (nếu là true thì trả về {})
             _id: new ObjectId(id),
             _destroy: false
           }
         },
         {
-          $lookup:{
+          $lookup: {
             // đang đứng ở board tìm tới colum
             from: columnModel.COLUMN_COLLECTION_NAME,
             // là cái _id của cái board hiện tại
@@ -89,19 +89,38 @@ const getDetails = async (id) => {
           }
         },
         {
-          $lookup:{
+          $lookup: {
             from: cardModel.CARD_COLLECTION_NAME,
             localField: '_id',
             foreignField: 'boardId',
             as: 'cards'
           }
         }
-      ]).toArray()
+      ])
+      .toArray()
     // aggregate nó sẽ trả về mảng => mục đích chỉ lấy 1 cái board
     // => thì nó sẽ luôn luôn là mảng có 1 phần tử
     // => nên sẽ return về phần tử đầu tiên result[0] - còn nếu kh có thì trả về null
-    console.log(result);
+    console.log(result)
     return result[0] || null
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+// nhiệm vụ của function này là push 1 cái giá trị columnId vào cuối mảng columnOrderIds
+const pushColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(column.boardId) },
+        { $push: { columnOrderIds: new ObjectId(column._id) } },
+        // dùng thg này nếu muốn trả về bản ghi đã được cập nhật
+        { returnDocument: 'after' }
+      )
+
+    return result.value
   } catch (error) {
     throw new Error(error)
   }
@@ -112,6 +131,6 @@ export const boardModel = {
   BOARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
-  getDetails
+  getDetails,
+  pushColumnOrderIds
 }
-
