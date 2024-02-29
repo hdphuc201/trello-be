@@ -29,6 +29,23 @@ const createNew = async (reqBody) => {
     throw error
   }
 }
+
+const update = async (columnId, reqBody) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updateAt: Date.now()
+    }
+    // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
+    const updatedColumn = await columnModel.update(columnId, updateData)
+
+    // trả kết quả về trong Service, luôn phải có return
+    return updatedColumn
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const columnService = {
-  createNew
+  createNew,
+  update
 }
