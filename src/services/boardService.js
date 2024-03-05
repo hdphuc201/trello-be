@@ -9,6 +9,8 @@ import { slugify } from '~/utils/formatters'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
 import { cloneDeep } from 'lodash'
+import { columnModel } from '~/models/columnModel'
+import { cardModel } from '~/models/cardModel'
 
 const createNew = async (reqBody) => {
   try {
@@ -85,8 +87,34 @@ const update = async (boardId, reqBody) => {
     throw new Error(error)
   }
 }
+const moveCardToDifferentColumn = async (reqBody) => {
+  try {
+    // B1: Cập nhật mảng cardOrderIds của Column ban đầu chứa nó (hiểu bản chất là xóa đi _id của Card ra khỏi mảng)
+    await columnModel.update(reqBody.prevColumnId, {
+      cardOrderIds: reqBody.prevCardOrderIds,
+      updateAt: Date.now()
+    })
+    // B2: Cập nhật mảng cardOrderIds của Column tiếp theo (hiểu bản chất là thêm _id của Card vào mảng)
+    await columnModel.update(reqBody.nextColumnId, {
+      cardOrderIds: reqBody.nextCardOrderIds,
+      updateAt: Date.now()
+    })
+    // B3: Cập nhật lại trường columnId mới của cái card đã kéo
+    await cardModel.update(reqBody.currentCardId, {
+      columnId: reqBody.nextColumnId
+    })
+
+    return {
+      updateResult: 'Successfully'
+    }
+    // eslint-disable-next-line no-unreachable
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardService = {
   createNew,
   getDetails,
-  update
+  update,
+  moveCardToDifferentColumn
 }
