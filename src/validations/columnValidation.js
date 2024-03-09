@@ -48,7 +48,28 @@ const update = async (req, res, next) => {
   }
 }
 
+const deleteItem = async (req, res, next) => {
+  const correctCondition = Joi.object({
+    id: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+  })
+
+  try {
+    // abortEarly (hủy bỏ sớm) :mặc định là true (là nó gặp lỗi tới đâu log ra tới đó) video 52
+    // Đối vs trường hợp update, cho phép Unknow để không đẩy 1 số field lên
+    await correctCondition.validateAsync(req.params, {
+      abortEarly: false,
+      allowUnknown: true
+    })
+    next()
+  } catch (error) {
+    const errorMessage = new Error(error).message
+    const customError = new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, errorMessage)
+    next(customError)
+  }
+}
+
 export const columnValidation = {
   createNew,
-  update
+  update,
+  deleteItem
 }
