@@ -19,9 +19,6 @@ const START_SERVER = () => {
 
   app.use(cors(corsOptions))
 
-  const hostname = 'localhost'
-  const port = 8017
-
   // Enable req.body json data
   app.use(express.json())
 
@@ -31,9 +28,21 @@ const START_SERVER = () => {
   // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
-    console.log(`3. Hello ${env.AUTHOR}, I am running at http://${hostname}:${port}/`)
-  })
+  // Môi trường production (cụ thể hiện tại là đang support render.com)
+  if (env.BUILD_MODE === 'production') {
+    app.listen(process.env.PORT, () => {
+      console.log(
+        `3. Production: Hello ${env.AUTHOR}, Back-end server is running successully at Port: ${process.env.PORT}`
+      )
+    })
+  } else {
+    // Môi trường local dev
+    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+      console.log(
+        `3. Local DEV: Hello ${env.AUTHOR}, Back-end server is running successully at Host: ${env.LOCAL_DEV_APP_HOST} and Port: ${env.LOCAL_DEV_APP_PORT}`
+      )
+    })
+  }
 
   // commnet video 48 có giải thích: nên sử dụng linux-ubuntun, sd window dễ gặp tình trạng lỗi
   // Ctrl + C lúc được lúc không
