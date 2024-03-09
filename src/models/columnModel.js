@@ -47,14 +47,14 @@ const createNew = async (data) => {
   }
 }
 
-const findOneById = async (id) => {
+const findOneById = async (columnId) => {
   try {
-    console.log(id)
+    console.log(columnId)
     const result = await GET_DB()
       .collection(COLUMN_COLLECTION_NAME)
       .findOne({
         // id truyền vào phải là 1 Object
-        _id: new ObjectId(id)
+        _id: new ObjectId(columnId)
       })
     return result
   } catch (error) {
@@ -108,11 +108,28 @@ const update = async (columnId, updateData) => {
   }
 }
 
+const deleteOneById = async (columnId) => {
+  try {
+    const result = await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .deleteOne({
+        // id truyền vào phải là 1 Object
+        _id: new ObjectId(columnId)
+      })
+
+    console.log('result', result)
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
   createNew,
   findOneById,
   pushCardOrderIds,
-  update
+  update,
+  deleteOneById
 }

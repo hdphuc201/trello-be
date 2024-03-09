@@ -44,14 +44,14 @@ const createNew = async (data) => {
   }
 }
 
-const findOneById = async (id) => {
+const findOneById = async (boardId) => {
   try {
-    console.log(id)
+    console.log(boardId)
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .findOne({
         // id truyền vào phải là 1 Object
-        _id: new ObjectId(id)
+        _id: new ObjectId(boardId)
       })
     return result
   } catch (error) {
@@ -111,7 +111,8 @@ const getDetails = async (id) => {
   }
 }
 
-// nhiệm vụ của function này là push 1 cái giá trị columnId vào cuối mảng columnOrderIds
+// Đẩy một phần tử ColumnId vào cuối mảng columnOrderIds
+// dùng $push trong mongdb ở trường hợp này để lấy một phần vào cuối mảng
 const pushColumnOrderIds = async (column) => {
   try {
     const result = await GET_DB()
@@ -119,6 +120,25 @@ const pushColumnOrderIds = async (column) => {
       .findOneAndUpdate(
         { _id: new ObjectId(column.boardId) },
         { $push: { columnOrderIds: new ObjectId(column._id) } },
+        // dùng thg này nếu muốn trả về bản ghi đã được cập nhật
+        { returnDocument: 'after' }
+      )
+
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+// Lấy một phần tử columnIds ra khỏi mảng columnOrderIds
+// dùng $pull trong mongdb ở trường hợp này để lấy một phần tử ra khỏi mảng rồi xóa nó đi
+const pullColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(column.boardId) },
+        { $pull: { columnOrderIds: new ObjectId(column._id) } },
         // dùng thg này nếu muốn trả về bản ghi đã được cập nhật
         { returnDocument: 'after' }
       )
@@ -164,5 +184,6 @@ export const boardModel = {
   findOneById,
   getDetails,
   pushColumnOrderIds,
+  pullColumnOrderIds,
   update
 }
