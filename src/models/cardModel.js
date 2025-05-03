@@ -34,7 +34,7 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    console.log('validData', validData)
+    // console.log('validData', validData)
 
     // biến đổi 1 số dữ liệu liên quan tới ObjectId chuẩn chỉnh
     const newCardToAdd = {
@@ -52,7 +52,7 @@ const createNew = async (data) => {
 
 const findOneById = async (cardId) => {
   try {
-    console.log(cardId)
+    // console.log(cardId)
     const result = await GET_DB()
       .collection(CARD_COLLECTION_NAME)
       .findOne({
@@ -95,7 +95,7 @@ const update = async (cardId, updateData) => {
 
 const deleteManyByColumnId = async (columnId) => {
   try {
-    console.log(columnId)
+    // console.log(columnId)
     const result = await GET_DB()
       .collection(CARD_COLLECTION_NAME)
       .deleteMany({
