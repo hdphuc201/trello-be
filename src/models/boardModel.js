@@ -1,9 +1,3 @@
-/**
- * Updated by trungquandev.com's author on August 17 2023
- * YouTube: https://youtube.com/@trungquandev
- * "A bit of fragrance clings to the hand that gives flowers!"
- */
-
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
@@ -36,7 +30,7 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    console.log('validData', validData)
+    // console.log('validData', validData)
     const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
     return createdBoard
   } catch (error) {
@@ -46,7 +40,7 @@ const createNew = async (data) => {
 
 const findOneById = async (boardId) => {
   try {
-    console.log(boardId)
+    // console.log(boardId)
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .findOne({
@@ -63,7 +57,6 @@ const findOneById = async (boardId) => {
 const getDetails = async (id) => {
   // Hôm nay tạm thời giống hệt hàm findOneById - và sẽ update phần aggregate tiep1 ở những video tới
   try {
-    console.log(id)
     // const result = await GET_DB()
     //   .collection(BOARD_COLLECTION_NAME)
     //   .findOne({
@@ -104,7 +97,7 @@ const getDetails = async (id) => {
     // aggregate nó sẽ trả về mảng => mục đích chỉ lấy 1 cái board
     // => thì nó sẽ luôn luôn là mảng có 1 phần tử
     // => nên sẽ return về phần tử đầu tiên result[0] - còn nếu kh có thì trả về null
-    console.log(result)
+    // console.log(result)
     return result[0] || null
   } catch (error) {
     throw new Error(error)

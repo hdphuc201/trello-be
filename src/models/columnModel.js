@@ -33,7 +33,7 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    console.log('validData', validData)
+    // console.log('validData', validData)
 
     const newColumnToAdd = {
       ...validData,
@@ -49,7 +49,7 @@ const createNew = async (data) => {
 
 const findOneById = async (columnId) => {
   try {
-    console.log(columnId)
+    // console.log(columnId)
     const result = await GET_DB()
       .collection(COLUMN_COLLECTION_NAME)
       .findOne({
@@ -117,7 +117,7 @@ const deleteOneById = async (columnId) => {
         _id: new ObjectId(columnId)
       })
 
-    console.log('result', result)
+    // console.log('result', result)
     return result
   } catch (error) {
     throw new Error(error)
