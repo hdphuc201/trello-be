@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
+import Joi from 'joi'
+
 import ApiError from '~/utils/ApiError'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 

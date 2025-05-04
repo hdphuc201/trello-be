@@ -1,10 +1,12 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
+
 import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPES } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
-import { columnModel } from './columnModel'
+
 import { cardModel } from './cardModel'
+import { columnModel } from './columnModel'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({

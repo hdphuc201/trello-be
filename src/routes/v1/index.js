@@ -1,9 +1,10 @@
 
 
 import express from 'express'
+
 import { boardRoute } from './boardRoute'
-import { columnRoute } from './columnRoute'
 import { cardRoute } from './cardRoute'
+import { columnRoute } from './columnRoute'
 
 const Router = express.Router()
 

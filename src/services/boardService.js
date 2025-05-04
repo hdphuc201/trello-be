@@ -1,11 +1,12 @@
 
-import { boardModel } from '~/models/boardModel'
-import { slugify } from '~/utils/formatters'
 import { StatusCodes } from 'http-status-codes'
-import ApiError from '~/utils/ApiError'
 import { cloneDeep } from 'lodash'
-import { columnModel } from '~/models/columnModel'
+
+import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
+import { columnModel } from '~/models/columnModel'
+import ApiError from '~/utils/ApiError'
+import { slugify } from '~/utils/formatters'
 
 const createNew = async (reqBody) => {
   try {
