@@ -19,6 +19,11 @@ app.use('/v1', APIs_V1)
 // Middleware xử lý lỗi tập trung
 app.use(errorHandlingMiddleware)
 
+// Test API
+app.get('/test', (req, res) => {
+  res.status(200).json({ message: 'Test API is working!' })
+})
+
 // Start server
 const START_SERVER = () => {
   const port = env.BUILD_MODE === 'production' ? process.env.PORT : env.LOCAL_DEV_APP_PORT
