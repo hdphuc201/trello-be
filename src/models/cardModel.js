@@ -29,7 +29,6 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    // console.log('validData', validData)
 
     // biến đổi 1 số dữ liệu liên quan tới ObjectId chuẩn chỉnh
     const newCardToAdd = {
