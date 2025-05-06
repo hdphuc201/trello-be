@@ -112,7 +112,6 @@ const deleteOneById = async (columnId) => {
         _id: new ObjectId(columnId)
       })
 
-    // console.log('result', result)
     return result
   } catch (error) {
     throw new Error(error)

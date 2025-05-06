@@ -4,11 +4,12 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { userModel } from '~/models/userModel'
 import { BrevoProvider } from '~/providers/BrevoProvider'
+import { jwtService } from '~/providers/JwtProdiver'
 import ApiError from '~/utils/ApiError'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { pickUser } from '~/utils/formatters'
 
-const createNew = async (reqBody) => {
+const register = async (reqBody) => {
   const { password, email } = reqBody
   try {
     const existUser = await userModel.findOneByEmail(email)
@@ -20,7 +21,7 @@ const createNew = async (reqBody) => {
     const emailParts = email.split('@')[0]
     const passwordHash = await bcrypt.hash(password, 10)
     const newUser = {
-      ...reqBody,
+      email,
       password: passwordHash,
       username: emailParts,
       displayName: emailParts,
@@ -34,7 +35,6 @@ const createNew = async (reqBody) => {
     const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
     const customObject = 'Trello: Please verify your email before using our service. '
 
-    // console.log removed to avoid unexpected console statement
     const htmlConent = `
     <h1>Welcome to our service!</h1>
     <p>Click to verify: ${verificationLink}</p>
@@ -46,6 +46,52 @@ const createNew = async (reqBody) => {
   }
 }
 
+const login = async (reqBody) => {
+  const { password, email } = reqBody
+  try {
+    const existUser = await userModel.findOneByEmail(email)
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+
+    if (!existUser.isActive) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Account not verified')
+
+    const isPasswordValid = await bcrypt.compare(password, existUser.password)
+    if (!isPasswordValid) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid credentials')
+
+    const accessToken = jwtService.generateAccessToken(existUser)
+    const refreshToken = jwtService.generateRefreshToken()
+
+    return {
+      ...pickUser(existUser),
+      accessToken,
+      refreshToken
+    }
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
+const verifyAccount = async (reqBody) => {
+  const { email, token } = reqBody
+  try {
+    const existUser = await userModel.findOneByEmail(email)
+
+    if (existUser.isActive === true) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Your account is already active!')
+
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+
+    if (existUser.verifyToken !== token) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid verification token')
+
+    // Set active to true and update the user in the database
+    const updateUser = await userModel.update(existUser._id, { verifyToken: null, isActive: true })
+    pickUser(updateUser)
+    return { message: 'Account verified successfully' }
+  } catch (error) {
+    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
+  }
+}
+
 export const userService = {
-  createNew
+  register,
+  login,
+  verifyAccount
 }
