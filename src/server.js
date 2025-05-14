@@ -7,10 +7,20 @@ import { env } from './config/environment'
 import { CLOSE_DB, CONNECT_DB } from './config/mongodb'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import { APIs_V1 } from './routes/v1'
+import cookieParser from 'cookie-parser'
 
 const app = express()
 
+
+// fix cái lỗi cache from dish của expressjs
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store')
+  next()
+})
+
+app.use(cookieParser())
 app.use(cors(corsOptions))
+
 
 // Enable req.body json data
 app.use(express.json())
@@ -37,7 +47,6 @@ exitHook(() => {
   CLOSE_DB()
   console.log('2. Disconnected from MongoDB')
 })
-
 ;(async () => {
   try {
     await CONNECT_DB()

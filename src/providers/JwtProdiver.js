@@ -6,7 +6,7 @@ import { env } from '~/config/environment'
 const generateAccessToken = (user) => {
   return jwt.sign({ _id: user?._id, email: user?.email, jit: uuidv4() },
     env.ACCESS_TOKEN_SECRET,
-    { expiresIn: '1h' })
+    { expiresIn: '1d' })
 }
 
 const generateRefreshToken = (user) => {
