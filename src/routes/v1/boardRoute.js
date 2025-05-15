@@ -2,7 +2,7 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { boardController } from '~/controllers/boardController'
-import { authMiddleware } from '~/middlewares/authMeddleware'
+import { authMiddleware } from '~/middlewares/authMiddleware'
 import { boardValidation } from '~/validations/boardValidation'
 
 const Router = express.Router()

@@ -3,7 +3,7 @@
 import express from 'express'
 
 import { cardController } from '~/controllers/cardController'
-import { authMiddleware } from '~/middlewares/authMeddleware'
+import { authMiddleware } from '~/middlewares/authMiddleware'
 import { cardValidation } from '~/validations/cardValidation'
 
 const Router = express.Router()

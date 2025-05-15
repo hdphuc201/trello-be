@@ -14,20 +14,19 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-
     const result = await userService.login(req.body)
 
-    res.cookie("refreshToken", result.refreshToken, {
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "None",
+      sameSite: 'None',
       maxAge: ms('14 days')
     })
 
-    res.cookie("accessToken", result.accessToken, {
+    res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "None",
+      sameSite: 'None',
       maxAge: ms('14 days')
     })
 
@@ -44,8 +43,39 @@ const verifyAccount = async (req, res, next) => {
     next(error)
   }
 }
+
+const logout = async (req, res, next) => {
+  try {
+    res.clearCookie('refreshToken')
+    res.clearCookie('accessToken')
+    return res.status(StatusCodes.OK).json({ loggeOut: true })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const refreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken
+    const accessToken = await userService.refreshToken(refreshToken)
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: ms('14 days')
+    })
+
+    return res.status(StatusCodes.OK).json(accessToken)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   register,
   login,
-  verifyAccount
+  logout,
+  verifyAccount,
+  refreshToken
 }

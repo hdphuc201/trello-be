@@ -3,7 +3,7 @@
 import express from 'express'
 
 import { columnController } from '~/controllers/columnController'
-import { authMiddleware } from '~/middlewares/authMeddleware'
+import { authMiddleware } from '~/middlewares/authMiddleware'
 import { columnValidation } from '~/validations/columnValidation'
 
 const Router = express.Router()

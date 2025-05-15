@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
+import { env } from '~/config/environment'
 
 import { userModel } from '~/models/userModel'
 import { BrevoProvider } from '~/providers/BrevoProvider'
@@ -90,8 +91,18 @@ const verifyAccount = async (reqBody) => {
   }
 }
 
+const refreshToken = async (refreshToken) => {
+  try {
+    const decoded = jwtService.verifyToken(refreshToken, env.REFRESH_TOKEN_SECRET)
+    return jwtService.generateAccessToken(decoded)
+  } catch (error) {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Refresh token expired, login again')
+  }
+}
+
 export const userService = {
   register,
   login,
-  verifyAccount
+  verifyAccount,
+  refreshToken
 }
