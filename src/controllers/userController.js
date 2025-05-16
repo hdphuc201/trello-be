@@ -72,10 +72,21 @@ const refreshToken = async (req, res, next) => {
   }
 }
 
+const update = async (req, res, next) => {
+  try {
+    const userId = req.user._id
+    const updateUser = await userService.update(userId, req.body)
+    return res.status(StatusCodes.OK).json(updateUser)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const userController = {
   register,
   login,
   logout,
   verifyAccount,
-  refreshToken
+  refreshToken,
+  update
 }

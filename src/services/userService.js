@@ -100,9 +100,33 @@ const refreshToken = async (refreshToken) => {
   }
 }
 
+const update = async (userId, reqBody) => {
+  const { current_password, new_password, displayName } = reqBody
+  try {
+    const existUser = await userModel.findOneById(userId)
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    if (existUser.isActive === false) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Your account is not active')
+
+    let updateUser = {}
+    if (displayName) updateUser.displayName = displayName
+
+    if (current_password && new_password) {
+      const isPasswordValid = await bcrypt.compare(current_password, existUser.password)
+      if (!isPasswordValid) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid current password')
+      const passwordHash = await bcrypt.hash(new_password, 10)
+      updateUser.password = passwordHash
+    }
+
+    const updatedUser = await userModel.update(userId, updateUser)
+    return pickUser(updatedUser)
+  } catch (error) {
+    throw error
+  }
+}
 export const userService = {
   register,
   login,
   verifyAccount,
-  refreshToken
+  refreshToken,
+  update
 }
