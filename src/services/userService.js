@@ -5,6 +5,7 @@ import { env } from '~/config/environment'
 
 import { userModel } from '~/models/userModel'
 import { BrevoProvider } from '~/providers/BrevoProvider'
+import { cloudinaryProvider, handleImageUploadBuffer } from '~/providers/cloudinaryProvider'
 import { jwtService } from '~/providers/JwtProdiver'
 import ApiError from '~/utils/ApiError'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
@@ -100,7 +101,7 @@ const refreshToken = async (refreshToken) => {
   }
 }
 
-const update = async (userId, reqBody) => {
+const update = async (userId, userAvatar, reqBody) => {
   const { current_password, new_password, displayName } = reqBody
   try {
     const existUser = await userModel.findOneById(userId)
@@ -108,6 +109,10 @@ const update = async (userId, reqBody) => {
     if (existUser.isActive === false) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Your account is not active')
 
     let updateUser = {}
+    if (userAvatar) {
+      const avatarUrl = await cloudinaryProvider.handleImageUpload(userAvatar.buffer, 'users')
+      updateUser.avatar = avatarUrl
+    }
     if (displayName) updateUser.displayName = displayName
 
     if (current_password && new_password) {
