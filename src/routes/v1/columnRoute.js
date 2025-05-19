@@ -8,7 +8,7 @@ import { columnValidation } from '~/validations/columnValidation'
 
 const Router = express.Router()
 
-Router.route('/').post(authMiddleware.isAuthrization, columnValidation.createNew, columnController.createNew)
+Router.route('/').post(authMiddleware.isAuthrization, columnValidation.create, columnController.create)
 Router.route('/:id')
   .put(authMiddleware.isAuthrization, columnValidation.update, columnController.update)
   .delete(authMiddleware.isAuthrization, columnValidation.deleteItem, columnController.deleteItem)

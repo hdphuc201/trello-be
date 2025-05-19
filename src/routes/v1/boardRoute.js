@@ -7,11 +7,10 @@ import { boardValidation } from '~/validations/boardValidation'
 const Router = express.Router()
 
 Router.route('/')
-  .get(authMiddleware.isAuthrization, boardController.getBoards,)
-  .post(authMiddleware.isAuthrization, boardValidation.createBoard, boardController.createBoard)
+  .get(authMiddleware.isAuthrization, boardController.getAll)
+  .post(authMiddleware.isAuthrization, boardValidation.create, boardController.create)
 
 Router.route('/:id')
-  // từ Router -> Controler (tùy TH, kh nhất thiết phải qua validate vì ở đây nó chỉ cần truyền id nên kh cần thiết qua validate)
   .get(authMiddleware.isAuthrization, boardController.getDetails)
   .put(authMiddleware.isAuthrization, boardValidation.update, boardController.update)
 

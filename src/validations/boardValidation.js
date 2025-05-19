@@ -7,7 +7,7 @@ import ApiError from '~/utils/ApiError'
 import { BOARD_TYPES } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
-const createBoard = async (req, res, next) => {
+const create = async (req, res, next) => {
   /**
    * - Note: Mặc định chúng ta không cần phải custom message ở phía BE làm gì
    *   vì để cho Frontend tự validate và custom phía FE cho đẹp
@@ -33,7 +33,7 @@ const createBoard = async (req, res, next) => {
     // abortEarly (hủy bỏ sớm) :mặc định là true (là nó gặp lỗi tới đâu log ra tới đó) video 52
     // còn false là nó sẽ log ra hết lỗi 1 lần
     await correctCondition.validateAsync(req.body, { abortEarly: false })
-    // Validate hợp lệ, gửi request đi tiếp tới Controller (boardController.createBoard file boardRoute line 18)
+    // Validate hợp lệ, gửi request đi tiếp tới Controller (boardController.create file boardRoute line 18)
     next()
     // res.status(StatusCodes.CREATED).json({ message: 'POST from Validation: API create new board' })
   } catch (error) {
@@ -90,7 +90,7 @@ const moveCardToDifferentColumn = async (req, res, next) => {
   }
 }
 export const boardValidation = {
-  createBoard,
+  create,
   update,
   moveCardToDifferentColumn
 }

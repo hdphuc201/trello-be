@@ -7,13 +7,13 @@ import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import ApiError from '~/utils/ApiError'
 
-const createNew = async (reqBody) => {
+const create = async (reqBody) => {
   try {
     const newColumn = {
       ...reqBody
     }
 
-    const createdColumn = await columnModel.createNew(newColumn)
+    const createdColumn = await columnModel.create(newColumn)
     const getNewColumn = await columnModel.findOneById(createdColumn.insertedId)
 
     if (getNewColumn) {
@@ -72,7 +72,7 @@ const deleteItem = async (columnId) => {
 }
 
 export const columnService = {
-  createNew,
+  create,
   update,
   deleteItem
 }

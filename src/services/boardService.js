@@ -8,7 +8,7 @@ import ApiError from '~/utils/ApiError'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import { slugify } from '~/utils/formatters'
 
-const createBoard = async (userId, reqBody) => {
+const create = async (userId, reqBody) => {
   try {
     // xử lý logic dữ liệu tùy đặc thù dự án
     const newBoard = {
@@ -17,7 +17,7 @@ const createBoard = async (userId, reqBody) => {
     }
 
     // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
-    const createdBoard = await boardModel.createBoard(userId, newBoard)
+    const createdBoard = await boardModel.create(userId, newBoard)
 
     // lấy bản ghi board sau khi gọi ( tùy mục đích dự án mà có cần bước này hay không)
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
@@ -32,13 +32,13 @@ const createBoard = async (userId, reqBody) => {
   }
 }
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getAll = async (userId, page, itemsPerPage) => {
   try {
     if (!page) page = DEFAULT_PAGE
     if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE
 
     // +page và +itemsPerPage luôn ép về kiểu Number
-    const boards = await boardModel.getBoards(userId, +page, +itemsPerPage)
+    const boards = await boardModel.getAll(userId, +page, +itemsPerPage)
     return boards
   } catch (error) {
     throw new Error(error)
@@ -121,8 +121,8 @@ const moveCardToDifferentColumn = async (reqBody) => {
   }
 }
 export const boardService = {
-  getBoards,
-  createBoard,
+  getAll,
+  create,
   getDetails,
   update,
   moveCardToDifferentColumn

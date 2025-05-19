@@ -8,6 +8,7 @@ import { cardValidation } from '~/validations/cardValidation'
 
 const Router = express.Router()
 
-Router.route('/').post(authMiddleware.isAuthrization, cardValidation.createNew, cardController.createNew)
+Router.route('/').post(authMiddleware.isAuthrization, cardValidation.create, cardController.create)
+Router.route('/:id').put(authMiddleware.isAuthrization, cardValidation.update, cardController.update)
 
 export const cardRoute = Router

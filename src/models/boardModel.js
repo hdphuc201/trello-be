@@ -33,7 +33,7 @@ const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createBoard = async (userId, data) => {
+const create = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
 
@@ -175,7 +175,7 @@ const update = async (boardId, updateData) => {
   }
 }
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getAll = async (userId, page, itemsPerPage) => {
   try {
     const queryCondition = [
       // điều kiện board chưa bị xóa
@@ -221,11 +221,11 @@ const getBoards = async (userId, page, itemsPerPage) => {
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
-  createBoard,
+  getAll,
+  create,
   findOneById,
   getDetails,
   pushColumnOrderIds,
   pullColumnOrderIds,
-  update,
-  getBoards
+  update
 }

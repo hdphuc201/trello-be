@@ -25,7 +25,7 @@ const validateBeforeCreate = async (data) => {
   return await COLUMN_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const create = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
     // console.log('validData', validData)
@@ -121,9 +121,9 @@ const deleteOneById = async (columnId) => {
 export const columnModel = {
   COLUMN_COLLECTION_NAME,
   COLUMN_COLLECTION_SCHEMA,
-  createNew,
+  create,
+  update,
   findOneById,
   pushCardOrderIds,
-  update,
   deleteOneById
 }
