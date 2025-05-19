@@ -8,7 +8,7 @@ const Router = express.Router()
 
 Router.route('/')
   .get(authMiddleware.isAuthrization, boardController.getBoards,)
-  .post(authMiddleware.isAuthrization, boardValidation.createNew, boardController.createNew)
+  .post(authMiddleware.isAuthrization, boardValidation.createBoard, boardController.createBoard)
 
 Router.route('/:id')
   // từ Router -> Controler (tùy TH, kh nhất thiết phải qua validate vì ở đây nó chỉ cần truyền id nên kh cần thiết qua validate)

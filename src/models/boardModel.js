@@ -33,10 +33,17 @@ const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const createBoard = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+
+    const creatBoardData = {
+      ...validData,
+      ownerIds: [new ObjectId(userId)],
+      memberIds: [new ObjectId(userId)]
+    }
+
+    const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(creatBoardData)
     return createdBoard
   } catch (error) {
     throw new Error(error)
@@ -59,25 +66,18 @@ const findOneById = async (boardId) => {
 }
 
 // Query tổng hợp (aggregate) để lấy toàn bộ Columns và Cards thuộc về Board
-const getDetails = async (id) => {
+const getDetails = async (userId, boardId) => {
   // Hôm nay tạm thời giống hệt hàm findOneById - và sẽ update phần aggregate tiep1 ở những video tới
   try {
-    // const result = await GET_DB()
-    //   .collection(BOARD_COLLECTION_NAME)
-    //   .findOne({
-    //     // id truyền vào phải là 1 Object
-    //     _id: new ObjectId(id)
-    //   })
+    const queryCondition = [
+      { _id: new ObjectId(boardId) },
+      { _destroy: false },
+      { $or: [{ ownerIds: { $all: [new ObjectId(userId)] } }, { memberIds: { $all: [new ObjectId(userId)] } }] }
+    ]
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .aggregate([
-        {
-          $match: {
-            // tìm Id đồng thời _destroy phải là false (nếu là true thì trả về {})
-            _id: new ObjectId(id),
-            _destroy: false
-          }
-        },
+        { $match: { $and: queryCondition } },
         {
           $lookup: {
             // đang đứng ở board tìm tới colum
@@ -176,7 +176,6 @@ const update = async (boardId, updateData) => {
 }
 
 const getBoards = async (userId, page, itemsPerPage) => {
-  console.log('userId, page, itemsPerPage', userId, page, itemsPerPage)
   try {
     const queryCondition = [
       // điều kiện board chưa bị xóa
@@ -222,7 +221,7 @@ const getBoards = async (userId, page, itemsPerPage) => {
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
-  createNew,
+  createBoard,
   findOneById,
   getDetails,
   pushColumnOrderIds,

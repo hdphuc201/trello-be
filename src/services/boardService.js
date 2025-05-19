@@ -8,7 +8,7 @@ import ApiError from '~/utils/ApiError'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import { slugify } from '~/utils/formatters'
 
-const createNew = async (reqBody) => {
+const createBoard = async (userId, reqBody) => {
   try {
     // xử lý logic dữ liệu tùy đặc thù dự án
     const newBoard = {
@@ -17,7 +17,7 @@ const createNew = async (reqBody) => {
     }
 
     // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
-    const createdBoard = await boardModel.createNew(newBoard)
+    const createdBoard = await boardModel.createBoard(userId, newBoard)
 
     // lấy bản ghi board sau khi gọi ( tùy mục đích dự án mà có cần bước này hay không)
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
@@ -44,10 +44,10 @@ const getBoards = async (userId, page, itemsPerPage) => {
     throw new Error(error)
   }
 }
-const getDetails = async (boardId) => {
+const getDetails = async (userId, boardId) => {
   try {
     // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
-    const board = await boardModel.getDetails(boardId)
+    const board = await boardModel.getDetails(userId,boardId)
 
     // board == null
     if (!board) {
@@ -122,7 +122,7 @@ const moveCardToDifferentColumn = async (reqBody) => {
 }
 export const boardService = {
   getBoards,
-  createNew,
+  createBoard,
   getDetails,
   update,
   moveCardToDifferentColumn

@@ -7,7 +7,7 @@ import ApiError from '~/utils/ApiError'
 import { BOARD_TYPES } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
-const createNew = async (req, res, next) => {
+const createBoard = async (req, res, next) => {
   /**
    * - Note: Mặc định chúng ta không cần phải custom message ở phía BE làm gì
    *   vì để cho Frontend tự validate và custom phía FE cho đẹp
@@ -20,11 +20,10 @@ const createNew = async (req, res, next) => {
     // trim().strict() phải đi chung vs nhau
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
       // custom lỗi
-      'any.required': 'Title is required (duyphucdev)',
-      'string.empty': 'Title is not allowed to be empty (duyphucdev)',
+      'any.required': 'Title is required',
       'string.min': 'Tối thiểu 3 ký tự',
-      'string.max': 'Title length must be less than or equal to 5 characters long (duyphucdev)',
-      'string.trim': 'Title kh được có khoảng trắng ở đầu và cuối (duyphucdev)'
+      'string.max': 'Title length must be less than or equal to 5 characters long',
+      'string.trim': 'Title must not have leading or trailing whitespace'
     }),
     description: Joi.string().required().min(3).max(256).trim().strict(),
     type: Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required()
@@ -34,7 +33,7 @@ const createNew = async (req, res, next) => {
     // abortEarly (hủy bỏ sớm) :mặc định là true (là nó gặp lỗi tới đâu log ra tới đó) video 52
     // còn false là nó sẽ log ra hết lỗi 1 lần
     await correctCondition.validateAsync(req.body, { abortEarly: false })
-    // Validate hợp lệ, gửi request đi tiếp tới Controller (boardController.createNew file boardRoute line 18)
+    // Validate hợp lệ, gửi request đi tiếp tới Controller (boardController.createBoard file boardRoute line 18)
     next()
     // res.status(StatusCodes.CREATED).json({ message: 'POST from Validation: API create new board' })
   } catch (error) {
@@ -91,7 +90,7 @@ const moveCardToDifferentColumn = async (req, res, next) => {
   }
 }
 export const boardValidation = {
-  createNew,
+  createBoard,
   update,
   moveCardToDifferentColumn
 }

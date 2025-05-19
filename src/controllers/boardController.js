@@ -1,12 +1,12 @@
-
 import { StatusCodes } from 'http-status-codes'
 
 import { boardService } from '~/services/boardService'
 
-const createNew = async (req, res, next) => {
+const createBoard = async (req, res, next) => {
+  const userId = req.user._id
   try {
     //Điều hướng dữ liệu sang tầng service
-    const createBoard = await boardService.createNew(req.body)
+    const createBoard = await boardService.createBoard(userId, req.body)
     res.status(StatusCodes.CREATED).json(createBoard)
   } catch (error) {
     next(error)
@@ -25,9 +25,9 @@ const getBoards = async (req, res, next) => {
 }
 const getDetails = async (req, res, next) => {
   try {
+    const userId = req.user._id
     const boardId = req.params.id
-    console.log('boardId', boardId)
-    const board = await boardService.getDetails(boardId)
+    const board = await boardService.getDetails(userId, boardId)
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
     next(error)
@@ -56,7 +56,7 @@ const moveCardToDifferentColumn = async (req, res, next) => {
 
 export const boardController = {
   getBoards,
-  createNew,
+  createBoard,
   getDetails,
   update,
   moveCardToDifferentColumn
