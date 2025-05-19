@@ -1,4 +1,3 @@
-
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
 
@@ -6,6 +5,7 @@ import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import ApiError from '~/utils/ApiError'
+import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import { slugify } from '~/utils/formatters'
 
 const createNew = async (reqBody) => {
@@ -32,6 +32,18 @@ const createNew = async (reqBody) => {
   }
 }
 
+const getBoards = async (userId, page, itemsPerPage) => {
+  try {
+    if (!page) page = DEFAULT_PAGE
+    if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE
+
+    // +page và +itemsPerPage luôn ép về kiểu Number
+    const boards = await boardModel.getBoards(userId, +page, +itemsPerPage)
+    return boards
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 const getDetails = async (boardId) => {
   try {
     // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
@@ -109,6 +121,7 @@ const moveCardToDifferentColumn = async (reqBody) => {
   }
 }
 export const boardService = {
+  getBoards,
   createNew,
   getDetails,
   update,

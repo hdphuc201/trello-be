@@ -16,6 +16,10 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   type: Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required(),
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé, (lúc quay video số 57 mình quên nhưng sang đầu video số 58 sẽ có nhắc lại về cái này.)
   columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  // những Admin của board
+  ownerIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  // những Member của board
+  memberIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 
   createAt: Joi.date().timestamp('javascript').default(Date.now),
   updateAt: Joi.date().timestamp('javascript').default(null),
@@ -171,6 +175,50 @@ const update = async (boardId, updateData) => {
   }
 }
 
+const getBoards = async (userId, page, itemsPerPage) => {
+  console.log('userId, page, itemsPerPage', userId, page, itemsPerPage)
+  try {
+    const queryCondition = [
+      // điều kiện board chưa bị xóa
+      { _destroy: false },
+      // điều kiện 2: userId đang thực hiện request này nó phải thuộc 1 trong 2 cái mảng ownerIds hoặc memberIds,
+      // sử dụng toán tử $all của mongodb
+      { $or: [{ ownerIds: { $all: [new ObjectId(userId)] } }, { memberIds: { $all: [new ObjectId(userId)] } }] }
+    ]
+
+    const query = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .aggregate(
+        [
+          { $match: { $and: queryCondition } },
+          // sort title của board theo A-Z (mặc định sẽ bị chữ B hoa đứng trước chữ a thường, theo chuẩn bảng mã ASCII)
+          { $sort: { title: 1 } },
+          // $facet để xử lý nhiều luồng trong một query
+          {
+            $facet: {
+              // luồng thứ 1: Querry board
+              queryBoards: [{ $skip: itemsPerPage > 0 ? (page - 1) * itemsPerPage : 0 }, { $limit: itemsPerPage }],
+              // luồng thứ 2: Query đếm tổng tất cả số lượng bản ghi boards trong DB và trả về vào biến countedAllBoards
+              queryTotalBoards: [{ $count: 'countedAllBoards' }]
+            }
+          }
+        ],
+        // Khai báo thêm thuộc tính collation locale 'en' để fix fux chữ B hoa và a thường
+        // https://www.mongodb.com/docs/v6.0/reference/collation/#std-label-collation-document-fields
+        { collation: { locale: 'en' } }
+      )
+      .toArray()
+    const res = query[0]
+
+    return {
+      boards: res?.queryBoards || [],
+      total: res?.queryTotalBoards[0]?.countedAllBoards || 0
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -179,5 +227,6 @@ export const boardModel = {
   getDetails,
   pushColumnOrderIds,
   pullColumnOrderIds,
-  update
+  update,
+  getBoards
 }
