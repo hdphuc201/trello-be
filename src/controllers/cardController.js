@@ -13,8 +13,9 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   const cardId = req.params.id
+  const cardCover = req.file || req.body.cardCover
   try {
-    const updatedCard = await cardService.update(cardId, req.body)
+    const updatedCard = await cardService.update(cardId, req.body, cardCover)
     res.status(StatusCodes.CREATED).json(updatedCard)
   } catch (error) {
     next(error)

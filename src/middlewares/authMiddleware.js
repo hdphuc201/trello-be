@@ -3,7 +3,7 @@ import jsonwebtoken from 'jsonwebtoken'
 import { env } from '~/config/environment'
 import ApiError from '~/utils/ApiError'
 
-const isAuthrization = async (req, res, next) => {
+const authentication = async (req, res, next) => {
   const clientAccessToken = req.cookies?.accessToken
   if (!clientAccessToken) {
     return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized (token not found)'))
@@ -22,5 +22,5 @@ const isAuthrization = async (req, res, next) => {
 }
 
 export const authMiddleware = {
-  isAuthrization
+  authentication
 }

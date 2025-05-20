@@ -12,7 +12,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
 
   title: Joi.string().required().min(3).max(50).trim().strict(),
-  description: Joi.string().optional(),
+  description: Joi.string().optional().allow(''),
 
   cover: Joi.string().default(null),
   memberIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
@@ -75,7 +75,7 @@ const findOneById = async (cardId) => {
   }
 }
 
-const update = async (cardId, updateData) => {
+const update = async (cardId, updateData, cardCover) => {
   try {
     // Lọc những cái field không cho phép chúng ta cập nhật linh tinh
     Object.keys(updateData).forEach((fieldName) => {

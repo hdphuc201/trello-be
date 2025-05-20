@@ -1,5 +1,6 @@
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
 
 const create = async (reqBody) => {
   try {
@@ -21,12 +22,18 @@ const create = async (reqBody) => {
   }
 }
 
+const update = async (cardId, reqBody, cardCover) => {
+  let cover
 
-const update = async (cardId, reqBody) => {
+  if (cardCover && typeof cardCover === 'object' && 'buffer' in cardCover) {
+    cover = await cloudinaryProvider.handleImageUpload(cardCover.buffer, 'cards')
+  } else {
+    cover = cardCover ? cardCover : undefined
+  }
   try {
-
     const updateData = {
       ...reqBody,
+      cover,
       createAt: Date.now()
     }
     const updatedCard = await cardModel.update(cardId, updateData)

@@ -47,7 +47,7 @@ const getAll = async (userId, page, itemsPerPage) => {
 const getDetails = async (userId, boardId) => {
   try {
     // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
-    const board = await boardModel.getDetails(userId,boardId)
+    const board = await boardModel.getDetails(userId, boardId)
 
     // board == null
     if (!board) {
