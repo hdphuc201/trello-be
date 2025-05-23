@@ -1,11 +1,11 @@
 import bcrypt from 'bcryptjs'
 import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
-import { env } from '~/config/environment'
 
+import { env } from '~/config/environment'
 import { userModel } from '~/models/userModel'
 import { BrevoProvider } from '~/providers/BrevoProvider'
-import { cloudinaryProvider, handleImageUploadBuffer } from '~/providers/cloudinaryProvider'
+import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
 import { jwtService } from '~/providers/JwtProdiver'
 import ApiError from '~/utils/ApiError'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
@@ -60,7 +60,7 @@ const login = async (reqBody) => {
     if (!isPasswordValid) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid credentials')
 
     const accessToken = jwtService.generateAccessToken(existUser)
-    const refreshToken = jwtService.generateRefreshToken()
+    const refreshToken = jwtService.generateRefreshToken(existUser)
 
     return {
       ...pickUser(existUser),

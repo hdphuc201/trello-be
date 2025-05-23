@@ -26,6 +26,7 @@ const create = async (req, res, next) => {
       'string.trim': 'Title must not have leading or trailing whitespace'
     }),
     description: Joi.string().required().min(3).max(256).trim().strict(),
+    cover: Joi.any().optional().allow(''),
     type: Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required()
   })
 

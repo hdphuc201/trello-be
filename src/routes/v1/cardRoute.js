@@ -10,7 +10,7 @@ const Router = express.Router()
 Router.route('/').post(authMiddleware.authentication, cardValidation.create, cardController.create)
 Router.route('/:id').put(
   authMiddleware.authentication,
-  multerUploadMiddleware.upload.single('cardCover'),
+  multerUploadMiddleware.upload.single('cover'),
   cardValidation.update,
   cardController.update
 )

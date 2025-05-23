@@ -1,4 +1,5 @@
 import exitHook from 'async-exit-hook'
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 
@@ -7,7 +8,6 @@ import { env } from './config/environment'
 import { CLOSE_DB, CONNECT_DB } from './config/mongodb'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import { APIs_V1 } from './routes/v1'
-import cookieParser from 'cookie-parser'
 
 const app = express()
 

@@ -1,8 +1,9 @@
 // config/cloudinary.js
 
 import { v2 as cloudinary } from 'cloudinary'
-import { env } from '~/config/environment'
 import streamifier from 'streamifier'
+
+import { env } from '~/config/environment'
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_CLOUD_NAME,

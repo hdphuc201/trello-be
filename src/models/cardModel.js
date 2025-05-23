@@ -3,7 +3,7 @@ import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 
 import { GET_DB } from '~/config/mongodb'
-import { EMAIL_RULE, EMAIL_RULE_MESSAGE, OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 // Define collection (name & schema)
 const CARD_COLLECTION_NAME = 'cards'
@@ -20,9 +20,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   // Dữ liệu comments của Card chúng ta sẽ học cách nhúng - embedded vào bản ghi Card luôn như dưới đây:
   comments: Joi.array()
     .items({
-      userId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-      userEmail: Joi.string().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
-      userAvatar: Joi.string(),
+      createdBy: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
       userDisplayName: Joi.string(),
       content: Joi.string(),
       // Chỗ này lưu ý vì dùng hàm push để thêm comment nên không set default Date.now luôn giống hàm insertOne khi create được.
@@ -75,7 +73,7 @@ const findOneById = async (cardId) => {
   }
 }
 
-const update = async (cardId, updateData, cardCover) => {
+const update = async (cardId, updateData) => {
   try {
     // Lọc những cái field không cho phép chúng ta cập nhật linh tinh
     Object.keys(updateData).forEach((fieldName) => {
@@ -102,6 +100,23 @@ const update = async (cardId, updateData, cardCover) => {
   }
 }
 
+
+// mongodb chỉ có hàm $push để đẩy phần tử vào cuối mảng thôi, nên nếu muốn đẩy vào đầu mảng
+// thì ta sẽ bọc data vào trong Array each và chỉ định postion là 0
+const pushComment = async (cardId, commentData) => {
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(cardId) },
+        { $push: { comments: { $each: [commentData], $position: 0 } } },
+        { returnDocument: 'after' }
+      )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 const deleteManyByColumnId = async (columnId) => {
   try {
     // console.log(columnId)
@@ -122,5 +137,6 @@ export const cardModel = {
   create,
   update,
   findOneById,
-  deleteManyByColumnId
+  deleteManyByColumnId,
+  pushComment
 }
