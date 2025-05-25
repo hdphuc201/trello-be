@@ -28,7 +28,6 @@ const validateBeforeCreate = async (data) => {
 const create = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    // console.log('validData', validData)
 
     const newColumnToAdd = {
       ...validData,
@@ -44,7 +43,6 @@ const create = async (data) => {
 
 const findOneById = async (columnId) => {
   try {
-    // console.log(columnId)
     const result = await GET_DB()
       .collection(COLUMN_COLLECTION_NAME)
       .findOne({

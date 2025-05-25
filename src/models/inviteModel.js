@@ -4,6 +4,8 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { BOARD_INVITATION_STATUS, INVITATION_TYPES } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
+import { userModel } from './userModel'
+import { boardModel } from './boardModel'
 
 // Define Collection (name & schema)
 const INVITATION_COLLECTION_NAME = 'invitations'
@@ -100,11 +102,71 @@ const update = async (invitationId, updateData) => {
     throw new Error(error)
   }
 }
+const findInvitationsByInvitee = async (userId) => {
+  // Hôm nay tạm thời giống hệt hàm findOneById - và sẽ update phần aggregate tiep1 ở những video tới
+  try {
+    const queryCondition = [{ inviteeId: new ObjectId(userId) }, { _destroy: false }] // người được mời là em
+    const result = await GET_DB()
+      .collection(INVITATION_COLLECTION_NAME)
+      .aggregate([
+        { $match: { $and: queryCondition } },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'inviterId', // người mời
+            foreignField: '_id',
+            as: 'inviter',
+            pipeline: [{ $project: { password: 0, verifyToken: 0 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: userModel.USER_COLLECTION_NAME,
+            localField: 'inviteeId', // người được mời
+            foreignField: '_id',
+            as: 'invitee',
+            pipeline: [{ $project: { password: 0, verifyToken: 0 } }]
+          }
+        },
+        {
+          $lookup: {
+            from: boardModel.BOARD_COLLECTION_NAME,
+            localField: 'boardInvitation.boardId', // lấy thông tin board
+            foreignField: '_id',
+            as: 'board'
+          }
+        }
+      ])
+      .toArray()
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+const deleteInvitesByInvitee = async (inviteeId) => {
+  try {
+    // Chuyển inviteeId thành ObjectId
+    const filter = { inviteeId: new ObjectId(inviteeId) }
+    // Xóa hết tất cả document matching filter
+    const { deletedCount } = await GET_DB()
+      .collection(INVITATION_COLLECTION_NAME)
+      .deleteMany(filter)
+    if (deletedCount === 0) {
+      throw new Error('No invitations found to delete')
+    }
 
+    return { success: true, deletedCount }
+  } catch (error) {
+    // Bao lỗi để gọi ra controller xử lý
+    throw new Error(error.message || 'Failed to delete invitations')
+  }
+}
 export const inviteModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   findOneById,
-  update
+  update,
+  deleteInvitesByInvitee,
+  findInvitationsByInvitee
 }

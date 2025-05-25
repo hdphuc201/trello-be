@@ -15,7 +15,9 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   slug: Joi.string().required().min(3).trim().strict(),
   description: Joi.string().required().min(3).max(256).trim().strict(),
   cover: Joi.any().optional().allow(''),
-  type: Joi.string().valid(...Object.values(BOARD_TYPES)).required(),
+  type: Joi.string()
+    .valid(...Object.values(BOARD_TYPES))
+    .required(),
   // Lưu ý các item trong mảng columnOrderIds là ObjectId nên cần thêm pattern cho chuẩn nhé, (lúc quay video số 57 mình quên nhưng sang đầu video số 58 sẽ có nhắc lại về cái này.)
   columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
   // những Admin của board
@@ -42,7 +44,8 @@ const create = async (userId, data) => {
     const creatBoardData = {
       ...validData,
       ownerIds: [new ObjectId(userId)],
-      memberIds: [new ObjectId(userId)]
+      // memberIds: [new ObjectId(userId)],
+      memberIds: []
     }
 
     const createdBoard = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(creatBoardData)
@@ -54,7 +57,6 @@ const create = async (userId, data) => {
 
 const findOneById = async (boardId) => {
   try {
-    // console.log(boardId)
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .findOne({
@@ -66,7 +68,6 @@ const findOneById = async (boardId) => {
     throw new Error(error)
   }
 }
-
 
 // Query tổng hợp (aggregate) để lấy toàn bộ Columns và Cards thuộc về Board
 const getDetails = async (userId, boardId) => {
@@ -125,7 +126,6 @@ const getDetails = async (userId, boardId) => {
     // aggregate nó sẽ trả về mảng => mục đích chỉ lấy 1 cái board
     // => thì nó sẽ luôn luôn là mảng có 1 phần tử
     // => nên sẽ return về phần tử đầu tiên result[0] - còn nếu kh có thì trả về null
-    // console.log(result)
     return result[0] || null
   } catch (error) {
     throw new Error(error)
@@ -134,16 +134,31 @@ const getDetails = async (userId, boardId) => {
 
 // Đẩy một phần tử ColumnId vào cuối mảng columnOrderIds
 // dùng $push trong mongdb ở trường hợp này để lấy một phần vào cuối mảng
-const pushColumnOrderIds = async (column) => {
+// update: gộm 2 func pushColumnOrderIds và pushMembersIds lại thành 1 func
+const pushToBoard = async ({ type, column, boardId, userId }) => {
+  // type: 'columnOrderIds' | 'memberIds'
   try {
+    let pushObject = {}
+    let targetBoardId = null
+
+    switch (type) {
+      case 'columnOrderIds':
+        pushObject = { columnOrderIds: new ObjectId(column._id) }
+        targetBoardId = column.boardId
+        break
+
+      case 'memberIds':
+        pushObject = { memberIds: new ObjectId(userId) }
+        targetBoardId = boardId
+        break
+
+      default:
+        throw new Error('Invalid push type')
+    }
+
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
-      .findOneAndUpdate(
-        { _id: new ObjectId(column.boardId) },
-        { $push: { columnOrderIds: new ObjectId(column._id) } },
-        // dùng thg này nếu muốn trả về bản ghi đã được cập nhật
-        { returnDocument: 'after' }
-      )
+      .findOneAndUpdate({ _id: new ObjectId(targetBoardId) }, { $push: pushObject }, { returnDocument: 'after' })
 
     return result
   } catch (error) {
@@ -246,9 +261,9 @@ export const boardModel = {
   BOARD_COLLECTION_SCHEMA,
   getAll,
   create,
+  pushToBoard,
   findOneById,
   getDetails,
-  pushColumnOrderIds,
   pullColumnOrderIds,
   update
 }

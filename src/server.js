@@ -1,18 +1,22 @@
+// index.js
 import exitHook from 'async-exit-hook'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
+import http from 'http'
+import { Server } from 'socket.io'
 
-import { corsOptions } from './config/cors'
-import { env } from './config/environment'
-import { CLOSE_DB, CONNECT_DB } from './config/mongodb'
-import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
-import { APIs_V1 } from './routes/v1'
+import { corsOptions } from './config/cors.js'
+import { env } from './config/environment.js'
+import { CLOSE_DB, CONNECT_DB } from './config/mongodb.js'
+import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware.js'
+import { APIs_V1 } from './routes/v1/index.js'
+import { inviteToBoard, userJoinBoard, userLeaveBoard } from './sockets/index.js'
 
+// --- EXPRESS ---
 const app = express()
 
-
-// fix cái lỗi cache from dish của expressjs
+// Fix caching
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store')
   next()
@@ -20,29 +24,50 @@ app.use((req, res, next) => {
 
 app.use(cookieParser())
 app.use(cors(corsOptions))
-
-
-// Enable req.body json data
 app.use(express.json())
-app.use('/v1', APIs_V1)
 
-// Middleware xử lý lỗi tập trung
+app.use('/v1', APIs_V1)
 app.use(errorHandlingMiddleware)
 
-// Test API
+// --- HTTP + SOCKET.IO ---
+// tạo server mới bọc thằng app của express để làm real-time vói Socket.IO
+const server = http.createServer(app)
+const io = new Server(server, {
+  cors: corsOptions
+})
+
+// --- SOCKET.IO EVENTS ---
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id)
+
+  inviteToBoard(socket)
+  userJoinBoard(socket)
+  userLeaveBoard(socket)
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id)
+  })
+})
+
+// --- TEST API ---
 app.get('/test', (req, res) => {
   res.status(200).json({ message: 'Test API is working!' })
 })
 
-// Start server
+// --- START SERVER ---
 const START_SERVER = () => {
   const port = env.BUILD_MODE === 'production' ? process.env.PORT : env.LOCAL_DEV_APP_PORT
   const host = env.BUILD_MODE === 'production' ? undefined : env.LOCAL_DEV_APP_HOST
 
-  app.listen(port, host, () => {
-    console.log(`${env.BUILD_MODE === 'production' ? 'Production' : 'Dev'}: Server running at ${host ?? ''}:${port}`)
+  // dùng server.listen() để lắng nghe kết nối từ client, // vì đã bọc app vào server mới tạo ở trên
+  server.listen(port, host, () => {
+    console.log(
+      `${env.BUILD_MODE === 'production' ? 'Production' : 'Dev'}: Server running at ${host ?? 'localhost'}:${port}`
+    )
   })
 }
+
+// --- DB CONNECT ---
 exitHook(() => {
   CLOSE_DB()
   console.log('2. Disconnected from MongoDB')
@@ -53,6 +78,7 @@ exitHook(() => {
     console.log('1. Connected to MongoDB Cloud Atlas!')
     START_SERVER()
   } catch (error) {
-    process.exit(0)
+    console.error('❌ MongoDB Connect Failed:', error)
+    process.exit(1)
   }
 })()

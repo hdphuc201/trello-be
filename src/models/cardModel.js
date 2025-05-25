@@ -60,7 +60,6 @@ const create = async (data) => {
 
 const findOneById = async (cardId) => {
   try {
-    // console.log(cardId)
     const result = await GET_DB()
       .collection(CARD_COLLECTION_NAME)
       .findOne({
@@ -119,7 +118,6 @@ const pushComment = async (cardId, commentData) => {
 }
 const deleteManyByColumnId = async (columnId) => {
   try {
-    // console.log(columnId)
     const result = await GET_DB()
       .collection(CARD_COLLECTION_NAME)
       .deleteMany({

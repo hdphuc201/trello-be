@@ -21,7 +21,10 @@ const create = async (reqBody) => {
       getNewColumn.cards = []
 
       // Cập nhật mảng columnOrderIds trong collection boards
-      await boardModel.pushColumnOrderIds(getNewColumn)
+      await boardModel.pushToBoard({
+        type: 'columnOrderIds',
+        column: getNewColumn
+      })
     }
 
     return getNewColumn
