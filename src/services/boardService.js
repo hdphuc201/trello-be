@@ -120,10 +120,24 @@ const moveCardToDifferentColumn = async (reqBody) => {
     throw new Error(error)
   }
 }
+
+const deleteBoard = async (boardId) => {
+  try {
+    if (!boardId) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'BoardId not found')
+    }
+    const res = await boardModel.deleteBoard(boardId)
+
+    return res
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 export const boardService = {
   getAll,
   create,
   getDetails,
   update,
+  deleteBoard,
   moveCardToDifferentColumn
 }

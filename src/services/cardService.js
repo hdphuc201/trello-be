@@ -26,7 +26,7 @@ const create = async (reqBody) => {
 
 // làm theo anh Quân
 const update = async (cardId, reqBody, cover) => {
-  const { commentToAdd } = reqBody
+  const { commentToAdd, inComingMemberInfor } = reqBody
   let cardCover
 
   if (cover && typeof cover === 'object' && 'buffer' in cover) {
@@ -36,23 +36,24 @@ const update = async (cardId, reqBody, cover) => {
   }
 
   try {
-    let updatedCard
-    if (reqBody.commentToAdd) {
+    if (commentToAdd) {
       const commentData = {
         ...commentToAdd,
         ...(commentToAdd?._id ? {} : { _id: new ObjectId() }),
         commentedAt: Date.now()
       }
-      updatedCard = await cardModel.pushComment(cardId, commentData)
-      return updatedCard
+      return await cardModel.pushComment(cardId, commentData)
+    }
+    if (inComingMemberInfor) {
+      return await cardModel.updateMembers(cardId, inComingMemberInfor)
     }
     const updateData = {
       ...reqBody,
       ...(cover ? { cover: cardCover } : {}),
       updatedAt: Date.now()
     }
-    updatedCard = await cardModel.update(cardId, updateData)
-    return updatedCard
+    const result = await cardModel.update(cardId, updateData)
+    return result
   } catch (error) {
     throw error
   }

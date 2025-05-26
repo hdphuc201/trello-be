@@ -1,5 +1,3 @@
-
-
 import { StatusCodes } from 'http-status-codes'
 
 import { boardModel } from '~/models/boardModel'
@@ -74,8 +72,33 @@ const deleteItem = async (columnId) => {
   }
 }
 
+const moveItemToBoard = async (columnId, boardId) => {
+  try {
+    const existColumn = await columnModel.findOneById(columnId)
+    const existBoard = await boardModel.findOneById(boardId)
+
+    if (!existColumn || !existBoard) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Column or Board not found')
+    }
+
+    // 1. Xóa columnId khỏi board hiện tại
+    await boardModel.pullColumnOrderIds(existColumn._id)
+
+    // 2. Cập nhật column.boardId + thêm vào board mới
+    const movedColumn = await columnModel.moveItemToBoard(columnId, boardId)
+
+    return {
+      message: 'Column moved successfully',
+      movedColumn
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const columnService = {
   create,
   update,
+  moveItemToBoard,
   deleteItem
 }

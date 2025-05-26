@@ -3,6 +3,7 @@ import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 
 import { GET_DB } from '~/config/mongodb'
+import { CARD_MEMBER_ACTION } from '~/utils/constants'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 // Define collection (name & schema)
@@ -11,7 +12,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
 
-  title: Joi.string().required().min(3).max(50).trim().strict(),
+  title: Joi.string().required().min(1).max(50).trim().strict(),
   description: Joi.string().optional().allow(''),
 
   cover: Joi.string().default(null),
@@ -99,7 +100,6 @@ const update = async (cardId, updateData) => {
   }
 }
 
-
 // mongodb chỉ có hàm $push để đẩy phần tử vào cuối mảng thôi, nên nếu muốn đẩy vào đầu mảng
 // thì ta sẽ bọc data vào trong Array each và chỉ định postion là 0
 const pushComment = async (cardId, commentData) => {
@@ -129,6 +129,25 @@ const deleteManyByColumnId = async (columnId) => {
     throw new Error(error)
   }
 }
+
+// xử lý cập nhập thêm hoặc xóa member ra khỏi card dựa theo action
+// $push để thêm hoặc $pull để loại bỏ (trong mongodb $pull lấy 1 phần tử ra khỏi mảng rồi xóa nó đi)
+const updateMembers = async (cardId, inComingMemberInfor) => {
+  try {
+    const updateCondition =
+      inComingMemberInfor.action === CARD_MEMBER_ACTION.ADD
+        ? { $push: { memberIds: new ObjectId(inComingMemberInfor.userId) } }
+        : { $pull: { memberIds: new ObjectId(inComingMemberInfor.userId) } }
+
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(cardId) }, updateCondition, { returnDocument: 'after' })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -136,5 +155,6 @@ export const cardModel = {
   update,
   findOneById,
   deleteManyByColumnId,
-  pushComment
+  pushComment,
+  updateMembers
 }

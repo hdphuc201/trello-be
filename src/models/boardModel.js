@@ -11,9 +11,9 @@ import { userModel } from './userModel'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
-  title: Joi.string().required().min(3).max(50).trim().strict(),
-  slug: Joi.string().required().min(3).trim().strict(),
-  description: Joi.string().required().min(3).max(256).trim().strict(),
+  title: Joi.string().required().min(1).max(50).trim().strict(),
+  slug: Joi.string().required().min(1).trim().strict(),
+  description: Joi.string().required().min(1).max(256).trim().strict(),
   cover: Joi.any().optional().allow(''),
   type: Joi.string()
     .valid(...Object.values(BOARD_TYPES))
@@ -256,6 +256,19 @@ const getAll = async (userId, page, itemsPerPage) => {
   }
 }
 
+const deleteBoard = async (boardId) => {
+  try {
+    const result = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .deleteOne({ _id: new ObjectId(boardId) }, { returnDocument: 'after' })
+
+    const newBoardList = await GET_DB().collection(BOARD_COLLECTION_NAME).find({}).toArray()
+    return { success: true, result, boards: newBoardList }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -265,5 +278,6 @@ export const boardModel = {
   findOneById,
   getDetails,
   pullColumnOrderIds,
-  update
+  update,
+  deleteBoard
 }

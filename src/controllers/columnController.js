@@ -1,5 +1,3 @@
-
-
 import { StatusCodes } from 'http-status-codes'
 
 import { columnService } from '~/services/columnService'
@@ -32,8 +30,21 @@ const deleteItem = async (req, res, next) => {
     next(error)
   }
 }
+
+const moveItemToBoard = async (req, res, next) => {
+  try {
+    const columnId = req.params.id
+    const { boardId } = req.body
+    const result = await columnService.moveItemToBoard(columnId, boardId)
+
+    res.status(StatusCodes.OK).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
 export const columnController = {
   create,
   update,
+  moveItemToBoard,
   deleteItem
 }

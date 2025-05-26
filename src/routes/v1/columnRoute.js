@@ -1,5 +1,3 @@
-
-
 import express from 'express'
 
 import { columnController } from '~/controllers/columnController'
@@ -12,5 +10,7 @@ Router.route('/').post(authMiddleware.authentication, columnValidation.create, c
 Router.route('/:id')
   .put(authMiddleware.authentication, columnValidation.update, columnController.update)
   .delete(authMiddleware.authentication, columnValidation.deleteItem, columnController.deleteItem)
+
+Router.route('/move/:id').put(authMiddleware.authentication, columnValidation.moveItemToBoard, columnController.moveItemToBoard)
 
 export const columnRoute = Router

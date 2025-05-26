@@ -18,14 +18,14 @@ const create = async (req, res, next) => {
 
   const correctCondition = Joi.object({
     // trim().strict() phải đi chung vs nhau
-    title: Joi.string().required().min(3).max(50).trim().strict().messages({
+    title: Joi.string().required().min(1).max(50).trim().strict().messages({
       // custom lỗi
       'any.required': 'Title is required',
       'string.min': 'Tối thiểu 3 ký tự',
       'string.max': 'Title length must be less than or equal to 5 characters long',
       'string.trim': 'Title must not have leading or trailing whitespace'
     }),
-    description: Joi.string().required().min(3).max(256).trim().strict(),
+    description: Joi.string().required().min(1).max(256).trim().strict(),
     cover: Joi.any().optional().allow(''),
     type: Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE).required()
   })
@@ -46,8 +46,8 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   const correctCondition = Joi.object({
     // trim().strict() phải đi chung vs nhau
-    title: Joi.string().min(3).max(50).trim().strict(),
-    description: Joi.string().min(3).max(256).trim().strict(),
+    title: Joi.string().min(1).max(50).trim().strict(),
+    description: Joi.string().min(1).max(256).trim().strict(),
     type: Joi.string().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVATE),
     columnOrderIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE))
   })
