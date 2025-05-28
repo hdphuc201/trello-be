@@ -1,5 +1,3 @@
-// (Muốn hiểu rõ hơn về code trong file này thì vui lòng xem video 55 trong bộ MERN Stack trên kênh Youtube Trungquandev)
-/* eslint-disable no-unused-vars */
 import { StatusCodes } from 'http-status-codes'
 
 import { env } from '~/config/environment'

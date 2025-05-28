@@ -6,7 +6,6 @@ import { userModel } from '~/models/userModel'
 import ApiError from '~/utils/ApiError'
 import { BOARD_INVITATION_STATUS, INVITATION_TYPES } from '~/utils/constants'
 import { pickUser } from '~/utils/formatters'
-import { ObjectId } from 'mongodb'
 
 const inviteUserToBoard = async (reqBody, inviterId) => {
   const { inviteeEmail, boardId } = reqBody

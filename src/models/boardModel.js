@@ -142,18 +142,18 @@ const pushToBoard = async ({ type, column, boardId, userId }) => {
     let targetBoardId = null
 
     switch (type) {
-      case 'columnOrderIds':
-        pushObject = { columnOrderIds: new ObjectId(column._id) }
-        targetBoardId = column.boardId
-        break
+    case 'columnOrderIds':
+      pushObject = { columnOrderIds: new ObjectId(column._id) }
+      targetBoardId = column.boardId
+      break
 
-      case 'memberIds':
-        pushObject = { memberIds: new ObjectId(userId) }
-        targetBoardId = boardId
-        break
+    case 'memberIds':
+      pushObject = { memberIds: new ObjectId(userId) }
+      targetBoardId = boardId
+      break
 
-      default:
-        throw new Error('Invalid push type')
+    default:
+      throw new Error('Invalid push type')
     }
 
     const result = await GET_DB()
@@ -213,7 +213,8 @@ const update = async (boardId, updateData) => {
   }
 }
 
-const getAll = async (userId, page, itemsPerPage) => {
+const getAll = async (userId, resQuery) => {
+  const { page, itemsPerPage, q } = resQuery
   try {
     const queryCondition = [
       // điều kiện board chưa bị xóa
@@ -223,6 +224,11 @@ const getAll = async (userId, page, itemsPerPage) => {
       { $or: [{ ownerIds: { $all: [new ObjectId(userId)] } }, { memberIds: { $all: [new ObjectId(userId)] } }] }
     ]
 
+    if (q && q?.title) {
+      queryCondition.push({
+        title: { $regex: q.title, $options: 'i' } // i = case-insensitive (không phân biệt hoa thường)
+      })
+    }
     const query = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .aggregate(

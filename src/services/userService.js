@@ -102,18 +102,16 @@ const refreshToken = async (refreshToken) => {
 }
 
 const update = async (userId, userAvatar, reqBody) => {
-  const { current_password, new_password, displayName } = reqBody
+  const { current_password, new_password, displayName, role } = reqBody
   try {
     const existUser = await userModel.findOneById(userId)
     if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
     if (existUser.isActive === false) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Your account is not active')
 
     let updateUser = {}
-    if (userAvatar) {
-      const avatarUrl = await cloudinaryProvider.handleImageUpload(userAvatar.buffer, 'users')
-      updateUser.avatar = avatarUrl
-    }
+    if (userAvatar) updateUser.avatar = userAvatar
     if (displayName) updateUser.displayName = displayName
+    if (role) updateUser.role = role
 
     if (current_password && new_password) {
       const isPasswordValid = await bcrypt.compare(current_password, existUser.password)

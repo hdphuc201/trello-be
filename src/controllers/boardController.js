@@ -15,9 +15,9 @@ const create = async (req, res, next) => {
 
 const getAll = async (req, res, next) => {
   const userId = req.user._id
-  const { page, itemsPerPage } = req.query
+  const { page, itemsPerPage, q } = req.query
   try {
-    const boards = await boardService.getAll(userId, page, itemsPerPage)
+    const boards = await boardService.getAll(userId, req.query)
     res.status(StatusCodes.OK).json(boards)
   } catch (error) {
     next(error)

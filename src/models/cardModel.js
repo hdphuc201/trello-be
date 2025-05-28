@@ -16,6 +16,15 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   description: Joi.string().optional().allow(''),
 
   cover: Joi.string().default(null),
+  fileAttach: Joi.array()
+    .items({
+      originalName: Joi.string(),
+      mimeType: Joi.string(),
+      size: Joi.number(),
+      url: Joi.string(),
+      createdAt: Joi.date().timestamp('javascript').default(Date.now)
+    })
+    .optional(),
   memberIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 
   // Dữ liệu comments của Card chúng ta sẽ học cách nhúng - embedded vào bản ghi Card luôn như dưới đây:

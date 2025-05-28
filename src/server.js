@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import http from 'http'
+import path from "path"
 import { Server } from 'socket.io'
 
 import { corsOptions } from './config/cors.js'
@@ -24,6 +25,10 @@ app.use((req, res, next) => {
 
 app.use(cookieParser())
 app.use(cors(corsOptions))
+
+// express.static để expose uploads
+app.use("/uploads", express.static(path.resolve("uploads")))
+
 app.use(express.json())
 
 app.use('/v1', APIs_V1)

@@ -125,7 +125,7 @@ const moveItemToBoard = async (columnId, newBoardId) => {
         { _id: new ObjectId(columnId) },
         { $set: { boardId: new ObjectId(newBoardId) } },
         { returnDocument: 'after' }
-      );
+      )
 
     // Thêm columnId vào board mới
     await GET_DB()
@@ -133,11 +133,11 @@ const moveItemToBoard = async (columnId, newBoardId) => {
       .findOneAndUpdate(
         { _id: new ObjectId(newBoardId) },
         { $push: { columnOrderIds: new ObjectId(columnId) } }
-      );
+      )
 
-    return result;
+    return result
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error)
   }
 }
 

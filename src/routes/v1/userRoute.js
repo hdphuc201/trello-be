@@ -2,7 +2,7 @@ import express from 'express'
 
 import { userController } from '~/controllers/userController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
-import { multerUploadMiddleware } from '~/middlewares/multerUploadMiddleware'
+import { uploadFiles } from '~/middlewares/multerUploadMiddleware'
 import { userValidation } from '~/validations/userValidation'
 
 const Router = express.Router()
@@ -16,7 +16,7 @@ Router.route('/refresh-token').get(userController.refreshToken)
 
 Router.route('/update').put(
   authMiddleware.authentication,
-  multerUploadMiddleware.upload.single('avatar'),
+  uploadFiles,
   userValidation.update,
   userController.update
 )

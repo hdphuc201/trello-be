@@ -23,7 +23,6 @@ Router.route('/:inviteeId').delete(
 )
 
 
-
 Router.route('/').post(
   authMiddleware.authentication,
   inviteValidation.inviteUserToBoard,

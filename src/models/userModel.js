@@ -4,13 +4,10 @@ import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 
 import { GET_DB } from '~/config/mongodb'
+import { USER_ROLES } from '~/utils/constants'
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE } from '~/utils/validators'
 
 // Define tạm 2 roles cho user, tuỳ việc mở rộng dự án như thế nào mà mọi người có thể thêm role tuỳ ý sau này cho phù hợp sau.
-const USER_ROLES = {
-  CLIENT: 'client',
-  ADMIN: 'admin'
-}
 
 // Define Collection (name & schema)
 const USER_COLLECTION_NAME = 'users'

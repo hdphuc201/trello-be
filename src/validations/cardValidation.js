@@ -27,14 +27,15 @@ const update = async (req, res, next) => {
   const correctCondition = Joi.object({
     title: Joi.string().min(1).max(50).trim().strict(),
     description: Joi.string().optional().allow(''),
-    cover: Joi.any().optional().allow('')
+    cover: Joi.any().optional().allow(''),
+    fileAttach: Joi.any().optional().allow('')
   })
 
   try {
     // abortEarly (hủy bỏ sớm) :mặc định là true (là nó gặp lỗi tới đâu log ra tới đó) video 52
     // Đối vs trường hợp update, cho phép Unknow để không đẩy 1 số field lên
     await correctCondition.validateAsync(req.body, {
-      abortEarly: false,
+      abortEarly: true,
       allowUnknown: true
     })
     next()

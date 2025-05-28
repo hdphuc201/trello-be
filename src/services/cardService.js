@@ -25,14 +25,23 @@ const create = async (reqBody) => {
 }
 
 // làm theo anh Quân
-const update = async (cardId, reqBody, cover) => {
-  const { commentToAdd, inComingMemberInfor } = reqBody
-  let cardCover
+const update = async (cardId, reqBody, updateObj) => {
+  const { commentToAdd, inComingMemberInfor, fileAttach: fileAttachDeleted } = reqBody
+  const { cover, fileAttach, avatar } = updateObj
 
-  if (cover && typeof cover === 'object' && 'buffer' in cover) {
-    cardCover = await cloudinaryProvider.handleImageUpload(cover.buffer, 'cards')
-  } else {
-    cardCover = cover || undefined
+  let attachFilesArray = []
+  const card = await cardModel.findOneById(cardId)
+
+  if (fileAttach) {
+    const updateFileAttach = {
+      ...fileAttach,
+      ...(fileAttach?._id ? {} : { _id: new ObjectId() })
+    }
+    if (card.fileAttach) {
+      attachFilesArray = [...card.fileAttach, updateFileAttach]
+    } else {
+      attachFilesArray.push(updateFileAttach)
+    }
   }
 
   try {
@@ -49,7 +58,10 @@ const update = async (cardId, reqBody, cover) => {
     }
     const updateData = {
       ...reqBody,
-      ...(cover ? { cover: cardCover } : {}),
+      avatar: avatar || null,
+      ...(cover ? { cover } : {}),
+      ...(fileAttach ? { fileAttach: attachFilesArray } : {}),
+      ...(fileAttachDeleted ? { fileAttach: fileAttachDeleted } : {}),
       updatedAt: Date.now()
     }
     const result = await cardModel.update(cardId, updateData)

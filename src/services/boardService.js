@@ -32,13 +32,14 @@ const create = async (userId, reqBody) => {
   }
 }
 
-const getAll = async (userId, page, itemsPerPage) => {
+const getAll = async (userId, reqQuery) => {
   try {
-    if (!page) page = DEFAULT_PAGE
-    if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE
+    // Lấy page và itemsPerPage, nếu không có thì dùng giá trị mặc định
+    let page = reqQuery.page ? +reqQuery.page : DEFAULT_PAGE
+    let itemsPerPage = reqQuery.itemsPerPage ? +reqQuery.itemsPerPage : DEFAULT_ITEMS_PER_PAGE
 
-    // +page và +itemsPerPage luôn ép về kiểu Number
-    const boards = await boardModel.getAll(userId, +page, +itemsPerPage)
+    // Truyền toàn bộ reqQuery xuống tầng model để xử lý các trường hợp lọc nâng cao (ví dụ q[title])
+    const boards = await boardModel.getAll(userId, { ...reqQuery, page, itemsPerPage })
     return boards
   } catch (error) {
     throw new Error(error)

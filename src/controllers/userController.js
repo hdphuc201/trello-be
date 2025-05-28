@@ -75,7 +75,17 @@ const refreshToken = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const userId = req.user._id
-    const userAvatar = req.file
+    let userAvatar
+
+    if (req.files?.avatar?.[0]) {
+      const file = req.files?.avatar?.[0]
+      userAvatar = {
+        filename: file.filename,
+        originalname: file.originalname
+      }
+    }
+
+    console.log('userAvatar', userAvatar)
     const updateUser = await userService.update(userId, userAvatar, req.body)
     return res.status(StatusCodes.OK).json(updateUser)
   } catch (error) {

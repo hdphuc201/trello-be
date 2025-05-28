@@ -61,7 +61,7 @@ const deleteItem = async (req, res, next) => {
 const moveItemToBoard = async (req, res, next) => {
   const correctCondition = Joi.object({
     columnId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-    boardId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    boardId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   })
 
 
