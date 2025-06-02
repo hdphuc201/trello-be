@@ -2,7 +2,6 @@ import { ObjectId } from 'mongodb'
 
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
-import { cloudinaryProvider } from '~/providers/cloudinaryProvider'
 
 const create = async (reqBody) => {
   try {
@@ -26,39 +25,64 @@ const create = async (reqBody) => {
 
 // làm theo anh Quân
 const update = async (cardId, reqBody, updateObj) => {
-  const { commentToAdd, inComingMemberInfor, fileAttach: fileAttachDeleted } = reqBody
-  const { cover, fileAttach, avatar } = updateObj
+  const { commentToAdd, inComingMemberInfor, fileAttach: fileAttachDeleted, todoList, date } = reqBody
+  const { cover, fileAttach } = updateObj
 
   let attachFilesArray = []
   const card = await cardModel.findOneById(cardId)
 
-  if (fileAttach) {
-    const updateFileAttach = {
-      ...fileAttach,
-      ...(fileAttach?._id ? {} : { _id: new ObjectId() })
-    }
-    if (card.fileAttach) {
-      attachFilesArray = [...card.fileAttach, updateFileAttach]
-    } else {
-      attachFilesArray.push(updateFileAttach)
-    }
-  }
-
   try {
-    if (commentToAdd) {
-      const commentData = {
-        ...commentToAdd,
-        ...(commentToAdd?._id ? {} : { _id: new ObjectId() }),
-        commentedAt: Date.now()
-      }
-      return await cardModel.pushComment(cardId, commentData)
+    if (date) {
+      return await cardModel.update(cardId, {
+        date,
+        updatedAt: Date.now()
+      })
     }
+
+    if (todoList) {
+      if (todoList.action === 'add') {
+        const newTodolist = {
+          ...todoList,
+          ...(todoList?._id ? {} : { _id: new ObjectId() })
+        }
+        todoList._id = new ObjectId()
+        return await cardModel.updateTodoList(card._id, newTodolist)
+      } else {
+        return await cardModel.updateTodoList(card._id, todoList)
+      }
+    }
+
+    if (commentToAdd) {
+      if (commentToAdd.action === 'add') {
+        const newComment = {
+          ...commentToAdd,
+          ...(commentToAdd?._id ? {} : { _id: new ObjectId() }),
+          commentedAt: Date.now()
+        }
+        return await cardModel.updateComment(cardId, newComment)
+      } else {
+        return await cardModel.updateComment(cardId, commentToAdd)
+      }
+    }
+
     if (inComingMemberInfor) {
       return await cardModel.updateMembers(cardId, inComingMemberInfor)
     }
+
+    if (fileAttach) {
+      if (fileAttach.action === 'add') {
+        const newFileAttach = {
+          ...fileAttach,
+          ...(fileAttach?._id ? {} : { _id: new ObjectId() })
+        }
+        return await cardModel.updateFileAttach(card._id, newFileAttach)
+      } else {
+        return await cardModel.updateFileAttach(card._id, fileAttach)
+      }
+    }
+
     const updateData = {
       ...reqBody,
-      avatar: avatar || null,
       ...(cover ? { cover } : {}),
       ...(fileAttach ? { fileAttach: attachFilesArray } : {}),
       ...(fileAttachDeleted ? { fileAttach: fileAttachDeleted } : {}),
@@ -70,7 +94,17 @@ const update = async (cardId, reqBody, updateObj) => {
     throw error
   }
 }
+
+const deleteCard = async (cardId) => {
+  try {
+    const deleteCard = await cardModel.deleteById(cardId)
+    return deleteCard
+  } catch (error) {
+    throw error
+  }
+}
 export const cardService = {
   create,
-  update
+  update,
+  deleteCard
 }

@@ -61,7 +61,7 @@ const getInvitationsForInvitee = async (userId) => {
       ...invitation,
       board: invitation.board[0] || {},
       inviter: invitation.inviter[0] || {},
-      invitee: invitation.inviter[0] || {}
+      invitee: invitation.invitee[0] || {}
     }
   })
 

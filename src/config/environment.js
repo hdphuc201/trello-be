@@ -20,5 +20,8 @@ export const env = {
   // cloudinary
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+
+  // login google
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID
 }

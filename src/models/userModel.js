@@ -12,13 +12,15 @@ import { EMAIL_RULE, EMAIL_RULE_MESSAGE } from '~/utils/validators'
 // Define Collection (name & schema)
 const USER_COLLECTION_NAME = 'users'
 const USER_COLLECTION_SCHEMA = Joi.object({
-  email: Joi.string().required().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE), // unique
-  password: Joi.string().required(),
+  email: Joi.string().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE), // unique
+  password: Joi.string(),
   // username cắt ra từ email sẽ có khả năng không unique bởi vì sẽ có những tên email trùng nhau nhưng tên miền khác nhau => username sẽ có thể giống nhau ở các người dùng khác nhau
   username: Joi.string().required().trim().strict(),
   displayName: Joi.string().required().trim().strict(),
   avatar: Joi.string().default(null),
-  role: Joi.string().valid(...Object.values(USER_ROLES)).default(USER_ROLES.CLIENT),
+  role: Joi.string()
+    .valid(...Object.values(USER_ROLES))
+    .default(USER_ROLES.CLIENT),
 
   isActive: Joi.boolean().default(false),
   verifyToken: Joi.string(),
@@ -65,23 +67,24 @@ const findOneByEmail = async (emailValue) => {
 const update = async (userId, updateData) => {
   try {
     // Lọc những field mà chúng ta không cho phép cập nhật linh tinh
-    Object.keys(updateData).forEach(fieldName => {
+    Object.keys(updateData).forEach((fieldName) => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
         delete updateData[fieldName]
       }
     })
 
-    const result = await GET_DB().collection(USER_COLLECTION_NAME).findOneAndUpdate(
-      { _id: new ObjectId(userId) },
-      { $set: updateData },
-      { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
-    )
+    const result = await GET_DB()
+      .collection(USER_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(userId) },
+        { $set: updateData },
+        { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
+      )
     return result
   } catch (error) {
     throw new Error(error)
   }
 }
-
 
 export const userModel = {
   USER_COLLECTION_NAME,

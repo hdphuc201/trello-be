@@ -27,7 +27,10 @@ const getDetails = async (req, res, next) => {
   try {
     const userId = req.user._id
     const boardId = req.params.id
-    const board = await boardService.getDetails(userId, boardId)
+
+    const accessRole = req.body.accessRole
+
+    const board = await boardService.getDetails(userId, boardId, accessRole)
     res.status(StatusCodes.OK).json(board)
   } catch (error) {
     next(error)

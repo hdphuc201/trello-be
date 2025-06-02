@@ -7,21 +7,11 @@ import { inviteValidation } from '~/validations/inviteValidation'
 const Router = express.Router()
 
 // get notify by user
-Router.route('/').get(
-  authMiddleware.authentication,
-  inviteController.getInvitationsForMe
-)
+Router.route('/').get(authMiddleware.authentication, inviteController.getInvitationsForMe)
 
-Router.route('/board/:invitationId').put(
-  authMiddleware.authentication,
-  inviteController.update
-)
+Router.route('/board/:invitationId').put(authMiddleware.authentication, inviteController.update)
 
-Router.route('/:inviteeId').delete(
-  authMiddleware.authentication,
-  inviteController.deleteInvite
-)
-
+Router.route('/:inviteeId').delete(authMiddleware.authentication, inviteController.deleteInvite)
 
 Router.route('/').post(
   authMiddleware.authentication,

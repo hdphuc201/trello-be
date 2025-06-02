@@ -1,5 +1,6 @@
 // map để lưu các user đang tham gia theo từng board
-const boardMembers = new Map() // Map<boardId, Array<user>>
+
+import { boardMembers } from './socketMapping'
 
 export const inviteToBoard = (socket) => {
   socket.on('invite_to_board', (invitation) => {
@@ -28,6 +29,7 @@ export const userJoinBoard = (socket) => {
     socket.emit('user_join_board', user) // gửi lại chính client vừa join
 
     // Gửi danh sách thành viên cho người mới join (nếu muốn đồng bộ UI sidebar)
+    // console.log('members', members)
     socket.emit('current_board_members', { boardId, members })
   })
 }
@@ -47,5 +49,31 @@ export const userLeaveBoard = (socket) => {
 
     // Gửi thông báo rời đi cho các client khác
     socket.to(boardId).emit('user_leave_board', user)
+  })
+}
+export const requestJoinBoard = (socket) => {
+  socket.on('request_join_board', ({ newRequest, user }) => {
+    const boardId = newRequest?.boardJoinRequest?.boardId
+    socket.join(boardId)
+
+    const members = boardMembers.get(boardId) || []
+    const isAlreadyIn = members.some((member) => member._id === user?._id)
+    if (!isAlreadyIn) {
+      members.push(user)
+      boardMembers.set(boardId, members)
+    }
+    // Gửi event 'receive_join_request' cho tất cả người trong room, bao gồm cả người vừa join
+    socket.to(boardId).emit('receive_join_request', newRequest)
+    socket.emit('receive_join_request', newRequest) // gửi lại chính client vừa join
+
+    // Gửi danh sách thành viên cho người mới join (nếu muốn đồng bộ UI sidebar)
+    socket.emit('current_board_members', { boardId: boardId, members })
+  })
+}
+
+// Phản hồi yêu cầu tham gia board và gửi riêng cho user
+export const responseJoinBoard = (socket) => {
+  socket.on('response_join_request', (res) => {
+    socket.broadcast.emit('response_join_request', res)
   })
 }

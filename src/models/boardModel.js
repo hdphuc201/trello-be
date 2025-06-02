@@ -75,8 +75,8 @@ const getDetails = async (userId, boardId) => {
   try {
     const queryCondition = [
       { _id: new ObjectId(boardId) },
-      { _destroy: false },
-      { $or: [{ ownerIds: { $all: [new ObjectId(userId)] } }, { memberIds: { $all: [new ObjectId(userId)] } }] }
+      { _destroy: false }
+      // { $or: [{ ownerIds: { $all: [new ObjectId(userId)] } }, { memberIds: { $all: [new ObjectId(userId)] } }] }
     ]
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)

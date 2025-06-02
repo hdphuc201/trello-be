@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import http from 'http'
-import path from "path"
+import path from 'path'
 import { Server } from 'socket.io'
 
 import { corsOptions } from './config/cors.js'
@@ -12,7 +12,7 @@ import { env } from './config/environment.js'
 import { CLOSE_DB, CONNECT_DB } from './config/mongodb.js'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware.js'
 import { APIs_V1 } from './routes/v1/index.js'
-import { inviteToBoard, userJoinBoard, userLeaveBoard } from './sockets/index.js'
+import { inviteToBoard, requestJoinBoard, responseJoinBoard, userJoinBoard, userLeaveBoard } from './sockets/index.js'
 
 // --- EXPRESS ---
 const app = express()
@@ -27,7 +27,7 @@ app.use(cookieParser())
 app.use(cors(corsOptions))
 
 // express.static để expose uploads
-app.use("/uploads", express.static(path.resolve("uploads")))
+app.use('/uploads', express.static(path.resolve('uploads')))
 
 app.use(express.json())
 
@@ -43,12 +43,13 @@ const io = new Server(server, {
 
 // --- SOCKET.IO EVENTS ---
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id)
+  // console.log('Client connected:', socket.id)
 
   inviteToBoard(socket)
   userJoinBoard(socket)
   userLeaveBoard(socket)
-
+  requestJoinBoard(socket)
+  responseJoinBoard(socket)
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id)
   })

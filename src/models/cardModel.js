@@ -15,7 +15,8 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(1).max(50).trim().strict(),
   description: Joi.string().optional().allow(''),
 
-  cover: Joi.string().default(null),
+  cover: Joi.any().default(null),
+  done: Joi.boolean().default(false),
   fileAttach: Joi.array()
     .items({
       originalName: Joi.string(),
@@ -25,7 +26,23 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
       createdAt: Joi.date().timestamp('javascript').default(Date.now)
     })
     .optional(),
+
+  todoList: Joi.array()
+    .items({
+      title: Joi.string().required().min(1).max(255).trim(),
+      _id: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+      items: Joi.array()
+        .items({
+          title: Joi.string().min(1).max(255).trim(),
+          isDone: Joi.boolean().default(false), // trong items của todoList
+          _id: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+        })
+        .default([])
+    })
+    .default([]),
+
   memberIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  memberCardIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 
   // Dữ liệu comments của Card chúng ta sẽ học cách nhúng - embedded vào bản ghi Card luôn như dưới đây:
   comments: Joi.array()
@@ -37,6 +54,13 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
       commentedAt: Joi.date().timestamp()
     })
     .default([]),
+
+  date: Joi.object({
+    startDate: Joi.date().timestamp('javascript').allow(null),
+    endDate: Joi.date().timestamp('javascript').allow('', null),
+    endTime: Joi.alternatives().try(Joi.date().timestamp('javascript'), Joi.valid(null)),
+    reminder: Joi.string().default('')
+  }).default({}),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -109,22 +133,6 @@ const update = async (cardId, updateData) => {
   }
 }
 
-// mongodb chỉ có hàm $push để đẩy phần tử vào cuối mảng thôi, nên nếu muốn đẩy vào đầu mảng
-// thì ta sẽ bọc data vào trong Array each và chỉ định postion là 0
-const pushComment = async (cardId, commentData) => {
-  try {
-    const result = await GET_DB()
-      .collection(CARD_COLLECTION_NAME)
-      .findOneAndUpdate(
-        { _id: new ObjectId(cardId) },
-        { $push: { comments: { $each: [commentData], $position: 0 } } },
-        { returnDocument: 'after' }
-      )
-    return result
-  } catch (error) {
-    throw new Error(error)
-  }
-}
 const deleteManyByColumnId = async (columnId) => {
   try {
     const result = await GET_DB()
@@ -133,6 +141,107 @@ const deleteManyByColumnId = async (columnId) => {
         // id truyền vào phải là 1 Object
         columnId: new ObjectId(columnId)
       })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+// mongodb chỉ có hàm $push để đẩy phần tử vào cuối mảng thôi, nên nếu muốn đẩy vào đầu mảng
+// thì ta sẽ bọc data vào trong Array each và chỉ định postion là 0
+const updateComment = async (cardId, commentData) => {
+  const updateCondition =
+    commentData.action === 'remove'
+      ? { $pull: { comments: { _id: new ObjectId(commentData._id) } } }
+      : { $push: { comments: { $each: [commentData], $position: 0 } } }
+
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(cardId) }, updateCondition, { returnDocument: 'after' })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const updateTodoList = async (cardId, todoList) => {
+  let updateCondition
+  let arrayFilters
+  // thêm todolist
+  if (todoList.action === 'add-item') {
+    updateCondition = {
+      $push: {
+        'todoList.$[todo].items': {
+          _id: new ObjectId(),
+          title: todoList.title,
+          isDone: false
+        }
+      }
+    }
+    arrayFilters = [{ 'todo._id': new ObjectId(todoList.todoId) }]
+  }
+
+  // arrayFilters dùng để chọn todoList cụ thể ($[todo]), còn items thì pull theo điều kiện _id.
+  if (todoList.action === 'remove-item') {
+    updateCondition = {
+      $pull: { 'todoList.$[todo].items': { _id: new ObjectId(todoList.itemId) } }
+    }
+    arrayFilters = [{ 'todo._id': new ObjectId(todoList.todoId) }]
+  }
+  if (todoList.action === 'update-item') {
+    updateCondition = {
+      $set: { 'todoList.$[todo].items.title': todoList.title }
+    }
+    arrayFilters = [{ 'todo._id': new ObjectId(todoList.todoId) }]
+  }
+
+  if (todoList.action === 'add') {
+    updateCondition = { $push: { todoList: { $each: [todoList], $position: 0 } } }
+  }
+  if (todoList.action === 'remove') {
+    updateCondition = { $pull: { todoList: { _id: new ObjectId(todoList.todoId) } } }
+  }
+  if (todoList.action === 'update') {
+    updateCondition = {
+      $set: {
+        'todoList.$[todo].title': todoList.title
+      }
+    }
+    arrayFilters = [{ 'todo._id': new ObjectId(todoList.todoId) }]
+  }
+  if (todoList.action === 'toggle-checkbox') {
+    updateCondition = {
+      $set: {
+        'todoList.$[todo].items.$[item].isDone': todoList.isDone
+      }
+    }
+    arrayFilters = [{ 'todo._id': new ObjectId(todoList.todoId) }, { 'item._id': new ObjectId(todoList.itemId) }]
+  }
+
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(cardId) }, updateCondition, {
+        returnDocument: 'after',
+        arrayFilters: arrayFilters ? arrayFilters : undefined
+      })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const updateFileAttach = async (cardId, fileAttach) => {
+  const updateCondition =
+    fileAttach.action === 'add'
+      ? { $push: { fileAttach: { $each: [fileAttach], $position: 0 } } }
+      : { $pull: { fileAttach: { _id: new ObjectId(fileAttach._id) } } }
+
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate({ _id: new ObjectId(cardId) }, updateCondition, { returnDocument: 'after' })
     return result
   } catch (error) {
     throw new Error(error)
@@ -157,6 +266,17 @@ const updateMembers = async (cardId, inComingMemberInfor) => {
   }
 }
 
+const deleteById = async (cardId) => {
+  try {
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .deleteOne({ _id: new ObjectId(cardId) })
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -164,6 +284,9 @@ export const cardModel = {
   update,
   findOneById,
   deleteManyByColumnId,
-  pushComment,
-  updateMembers
+  updateComment,
+  updateTodoList,
+  updateFileAttach,
+  updateMembers,
+  deleteById
 }

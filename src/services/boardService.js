@@ -4,6 +4,7 @@ import { cloneDeep } from 'lodash'
 import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
+import { userModel } from '~/models/userModel'
 import ApiError from '~/utils/ApiError'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '~/utils/constants'
 import { slugify } from '~/utils/formatters'
@@ -45,39 +46,75 @@ const getAll = async (userId, reqQuery) => {
     throw new Error(error)
   }
 }
-const getDetails = async (userId, boardId) => {
+const getDetails = async (userId, boardId, accessRole) => {
   try {
-    // gọi cho tới tầng Model để xử lý lưu bản ghi newBoard vào trong Database
-    const board = await boardModel.getDetails(userId, boardId)
-
-    // board == null
+    // 1. Kiểm tra xem board có tồn tại không
+    const board = await boardModel.findOneById(boardId)
     if (!board) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
     }
 
-    // B1: Deep clone board ra một cái mới để xử lý, không ảnh hưởng tới board ban đầu, tùy mục đích về sau mà có cần
-    // clone deep hay kh (video 63 giải thích)
-    // https://www.javascripttutorial.net/javascript-primitive-vs-reference-values/
-    const resBoard = cloneDeep(board)
+    // 2. Kiểm tra quyền truy cập
+    if (board.type === 'private') {
+      // Với board private, phải kiểm tra user có trong thành viên hoặc là owner
+      const boardDetail = await boardModel.getDetails(userId, boardId)
+      const user = await userModel.findOneById(userId)
 
-    // B2: Đưa card về đúng column của nó
-    resBoard.columns.forEach((column) => {
-      // logic chỗ này hay nha
-      // phải toString rồi mới so sánh (vì nó đang ở dạng ObjectId (check trong MongoDB Compass))
-      // C1: Cách đơn giản hơn là conver ObjectId về string bằng hàm toString() của JavaScipt
-      column.cards = resBoard.cards.filter((card) => card.columnId.toString() === column._id.toString())
+      const owner = boardDetail.owners[0]._id.toString() === user._id.toString()
+      const members = boardDetail.memberIds.map((item) => item.toString()).includes(user._id.toString())
 
-      // C2: Cách dùng equals này là bởi vì chúng ta hiểu ObjectId trong MongoDB có support method .equals
-      // column.cards = resBoard.cards.filter(card => card.columnId.equals(column._id))
-    })
+      if (!owner && !members) {
+        if (!accessRole) {
+          throw new ApiError(StatusCodes.FORBIDDEN, 'This is private board')
+        }
+      }
 
-    // B3: xóa mảng cards khỏi board ban đầu
-    delete resBoard.cards
+      // Tiếp tục xử lý dữ liệu
+      const resBoard = cloneDeep(boardDetail)
 
-    // trả kết quả về trong Service, luôn phải có return
-    return resBoard
+      resBoard.columns.forEach((column) => {
+        column.cards = resBoard.cards.filter((card) => card.columnId.toString() === column._id.toString())
+      })
+
+      delete resBoard.cards
+
+      return resBoard
+    } else {
+      // Với board public, không cần kiểm tra quyền
+      const boardDetail = await boardModel.getDetails(userId, boardId)
+
+      // Trường hợp user chưa từng tương tác với board này (chưa có trong bảng userBoards), cũng cho xem
+      if (!boardDetail) {
+        // Có thể tạo bản ghi mặc định ở đây nếu muốn tự động thêm user
+        // hoặc chỉ lấy board basic info
+        const publicBoard = await boardModel.getDetails(null, boardId) // Hoặc hàm riêng để lấy public board
+        if (!publicBoard) {
+          throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found')
+        }
+
+        const resBoard = cloneDeep(publicBoard)
+
+        resBoard.columns.forEach((column) => {
+          column.cards = resBoard.cards.filter((card) => card.columnId.toString() === column._id.toString())
+        })
+
+        delete resBoard.cards
+
+        return resBoard
+      }
+
+      const resBoard = cloneDeep(boardDetail)
+
+      resBoard.columns.forEach((column) => {
+        column.cards = resBoard.cards.filter((card) => card.columnId.toString() === column._id.toString())
+      })
+
+      delete resBoard.cards
+
+      return resBoard
+    }
   } catch (error) {
-    throw new Error(error)
+    throw new Error(error.message || 'Failed to get board details')
   }
 }
 

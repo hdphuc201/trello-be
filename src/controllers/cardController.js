@@ -13,6 +13,7 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   const cardId = req.params.id
+  const { originalname, type, action } = req.body
 
   let updateObj = {}
 
@@ -29,13 +30,19 @@ const update = async (req, res, next) => {
   }
 
   //attach file
-  if (req.files?.fileAttach?.[0]) {
-    updateObj.fileAttach = req.files.fileAttach[0]
+  if (req.files?.fileAttach?.[0] && action) {
+    updateObj.fileAttach = {
+      ...req.files.fileAttach[0],
+      action
+    }
   }
 
-  // avatar
-  if (req.files?.avatar?.[0]) {
-    updateObj.avatar = req.files.avatar[0]
+  if ((type, originalname)) {
+    updateObj.fileAttach = {
+      originalname,
+      type,
+      action
+    }
   }
 
   try {
@@ -45,7 +52,18 @@ const update = async (req, res, next) => {
     next(error)
   }
 }
+
+const deleteCard = async (req, res, next) => {
+  const cardId = req.params.id
+  try {
+    const deleteCard = await cardService.deleteCard(cardId)
+    res.status(StatusCodes.OK).json(deleteCard)
+  } catch (error) {
+    next(error)
+  }
+}
 export const cardController = {
   create,
-  update
+  update,
+  deleteCard
 }

@@ -47,6 +47,19 @@ const login = async (req, res, next) => {
   }
 }
 
+const loginGoogle = async (req, res, next) => {
+  const correctCondition = Joi.object({
+    token: Joi.string().required()
+  })
+
+  try {
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
+    next()
+  } catch (error) {
+    next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
+  }
+}
+
 const update = async (req, res, next) => {
   const correctCondition = Joi.object({
     displayName: Joi.string().trim().strict(),
@@ -66,5 +79,6 @@ export const userValidation = {
   register,
   verifyAccount,
   login,
+  loginGoogle,
   update
 }

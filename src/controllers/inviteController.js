@@ -34,7 +34,6 @@ const deleteInvite = async (req, res, next) => {
   }
 }
 
-
 const inviteUserToBoard = async (req, res, next) => {
   try {
     const inviterId = req.user._id
