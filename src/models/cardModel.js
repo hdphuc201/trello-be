@@ -277,6 +277,53 @@ const deleteById = async (cardId) => {
   }
 }
 
+const COLUMN_COLLECTION_NAME = 'columns'
+
+const moveCardToBoard = async (moveCard) => {
+  const { cardId, fromColumnId, boardId, toColumnId, toPosition } = moveCard
+  try {
+    // 1. Lấy card cần move
+    const cardToMove = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOne({ _id: new ObjectId(cardId) })
+    if (!cardToMove) throw new Error('Card not found')
+    // 2. Xoá card khỏi column cũ
+    await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .updateOne({ _id: new ObjectId(fromColumnId) }, { $pull: { cards: new ObjectId(cardId) } })
+
+    // 3. Chèn card vào column mới ở vị trí `toPosition`
+    const toColumn = await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .findOne({ _id: new ObjectId(toColumnId) })
+    if (!toColumn) throw new Error('Target column not found')
+
+    const updatedCards = toColumn.cards || []
+    updatedCards.splice(toPosition, 0, new ObjectId(cardId)) // chèn vào vị trí mới
+
+    await GET_DB()
+      .collection(COLUMN_COLLECTION_NAME)
+      .updateOne({ _id: new ObjectId(toColumnId) }, { $set: { cards: updatedCards } })
+
+    // 4. Cập nhật `boardId` và `columnId` của card
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(cardId) },
+        {
+          $set: {
+            boardId: new ObjectId(boardId),
+            columnId: new ObjectId(toColumnId)
+          }
+        },
+        { returnDocument: 'after' }
+      )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
@@ -288,5 +335,6 @@ export const cardModel = {
   updateTodoList,
   updateFileAttach,
   updateMembers,
-  deleteById
+  deleteById,
+  moveCardToBoard
 }

@@ -25,13 +25,16 @@ const create = async (reqBody) => {
 
 // làm theo anh Quân
 const update = async (cardId, reqBody, updateObj) => {
-  const { commentToAdd, inComingMemberInfor, fileAttach: fileAttachDeleted, todoList, date } = reqBody
+  const { commentToAdd, inComingMemberInfor, fileAttach: fileAttachDeleted, todoList, date, moveCard } = reqBody
   const { cover, fileAttach } = updateObj
 
   let attachFilesArray = []
   const card = await cardModel.findOneById(cardId)
 
   try {
+    if (moveCard) {
+      return await cardModel.moveCardToBoard(moveCard)
+    }
     if (date) {
       return await cardModel.update(cardId, {
         date,
