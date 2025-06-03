@@ -96,7 +96,6 @@ const update = async (reqBody) => {
 
     return updatedRequest
   } catch (error) {
-    console.error(error)
     throw error
   }
 }

@@ -146,13 +146,11 @@ const moveCardToDifferentColumn = async (reqBody) => {
       updateAt: Date.now()
     })
     // B3: Cập nhật lại trường columnId mới của cái card đã kéo
-    await cardModel.update(reqBody.currentCardId, {
+    const result = await cardModel.update(reqBody.currentCardId, {
       columnId: reqBody.nextColumnId
     })
 
-    return {
-      updateResult: 'Successfully'
-    }
+    return result
     // eslint-disable-next-line no-unreachable
   } catch (error) {
     throw new Error(error)

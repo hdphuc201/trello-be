@@ -64,9 +64,7 @@ const deleteItem = async (columnId) => {
     await boardModel.pullColumnOrderIds(targetColumn)
 
     // trả kết quả về trong Service, luôn phải có return
-    return {
-      deleteResult: 'Column and its Cards delete successfully!'
-    }
+    return
   } catch (error) {
     throw new Error(error)
   }

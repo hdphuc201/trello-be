@@ -12,7 +12,19 @@ import { env } from './config/environment.js'
 import { CLOSE_DB, CONNECT_DB } from './config/mongodb.js'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware.js'
 import { APIs_V1 } from './routes/v1/index.js'
-import { inviteToBoard, requestJoinBoard, responseJoinBoard, userJoinBoard, userLeaveBoard } from './sockets/index.js'
+import {
+  createCard,
+  createColumn,
+  deleteCard,
+  deleteColumn,
+  inviteToBoard,
+  requestJoinBoard,
+  responseJoinBoard,
+  updateCard,
+  updateColumn,
+  userJoinBoard,
+  userLeaveBoard
+} from './sockets/index.js'
 
 // --- EXPRESS ---
 const app = express()
@@ -50,6 +62,15 @@ io.on('connection', (socket) => {
   userLeaveBoard(socket)
   requestJoinBoard(socket)
   responseJoinBoard(socket)
+  // crud column
+  createColumn(socket)
+  deleteColumn(socket)
+  updateColumn(socket)
+  // card
+  createCard(socket)
+  deleteCard(socket)
+  updateCard(socket)
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id)
   })

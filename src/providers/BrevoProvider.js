@@ -24,7 +24,6 @@ const sendEmail = async (emailData, customObject, htmlConent) => {
     const response = await apiInstance.sendTransacEmail(sendSmtpEmail)
     return response
   } catch (error) {
-    console.error('Error sending email:', error)
     throw error
   }
 }

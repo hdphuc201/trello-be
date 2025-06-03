@@ -29,7 +29,6 @@ export const userJoinBoard = (socket) => {
     socket.emit('user_join_board', user) // gửi lại chính client vừa join
 
     // Gửi danh sách thành viên cho người mới join (nếu muốn đồng bộ UI sidebar)
-    // console.log('members', members)
     socket.emit('current_board_members', { boardId, members })
   })
 }
@@ -75,5 +74,62 @@ export const requestJoinBoard = (socket) => {
 export const responseJoinBoard = (socket) => {
   socket.on('response_join_request', (res) => {
     socket.broadcast.emit('response_join_request', res)
+  })
+}
+
+export const createColumn = (socket) => {
+  socket.on('create_column', (column) => {
+    if (!column) return
+    socket.join(column.boardId)
+    socket.to(column.boardId).emit('create_column', column)
+  })
+}
+
+export const updateColumn = (socket) => {
+  socket.on('update_column', (boardId) => {
+    if (!boardId) return
+    // socket.broadcast.emit('update_column', boardId)
+    socket.to(boardId).emit('update_column', boardId)
+  })
+}
+
+export const deleteColumn = (socket) => {
+  socket.on('delete_column', (boardId) => {
+    if (!boardId) return
+    socket.join(boardId)
+    socket.broadcast.emit('delete_column', boardId)
+  })
+}
+
+// card
+export const createCard = (socket) => {
+  socket.on('create_card', (boardId) => {
+    if (!boardId) return
+    socket.join(boardId)
+    socket.to(boardId).emit('create_card', boardId)
+  })
+}
+
+export const updateCard = (socket) => {
+  socket.on('update_card', (boardId) => {
+    if (!boardId) return
+    socket.join(boardId)
+    socket.to(boardId).emit('update_card', boardId)
+    // socket.broadcast.emit('update_card', card)
+  })
+
+  socket.on('update_activeCard', (updateCard) => {
+    if (!updateCard) return
+    socket.to(updateCard.boardId).emit('update_activeCard', updateCard)
+  })
+}
+
+export const deleteCard = (socket) => {
+  socket.on('delete_card', (boardId) => {
+    if (!boardId) return
+    socket.join(boardId)
+    // socket.broadcast.emit('delete_card', boardId)
+    socket.to(boardId).emit('delete_card', boardId)
+
   })
 }

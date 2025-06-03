@@ -5,7 +5,6 @@ import { requestService } from '~/services/requestService'
 const get = async (req, res, next) => {
   try {
     const boardId = req.query.boardId
-    const userId = req.user._id
     const newRequest = await requestService.get(boardId)
     const result = res.status(StatusCodes.OK).json(newRequest)
     return result

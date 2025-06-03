@@ -47,7 +47,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
   // Dữ liệu comments của Card chúng ta sẽ học cách nhúng - embedded vào bản ghi Card luôn như dưới đây:
   comments: Joi.array()
     .items({
-      createdBy: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+      user: Joi.object(),
       userDisplayName: Joi.string(),
       content: Joi.string(),
       // Chỗ này lưu ý vì dùng hàm push để thêm comment nên không set default Date.now luôn giống hàm insertOne khi create được.
