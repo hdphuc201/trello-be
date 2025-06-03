@@ -17,6 +17,9 @@ import {
   createColumn,
   deleteCard,
   deleteColumn,
+  handleSockerBoard,
+  handleSocketCard,
+  handleSocketColumn,
   inviteToBoard,
   requestJoinBoard,
   responseJoinBoard,
@@ -55,21 +58,11 @@ const io = new Server(server, {
 
 // --- SOCKET.IO EVENTS ---
 io.on('connection', (socket) => {
-  // console.log('Client connected:', socket.id)
+  console.log('Client connected:', socket.id)
 
-  inviteToBoard(socket)
-  userJoinBoard(socket)
-  userLeaveBoard(socket)
-  requestJoinBoard(socket)
-  responseJoinBoard(socket)
-  // crud column
-  createColumn(socket)
-  deleteColumn(socket)
-  updateColumn(socket)
-  // card
-  createCard(socket)
-  deleteCard(socket)
-  updateCard(socket)
+  handleSockerBoard(socket)
+  handleSocketColumn(socket)
+  handleSocketCard(socket)
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id)
