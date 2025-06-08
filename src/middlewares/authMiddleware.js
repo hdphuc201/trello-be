@@ -8,6 +8,7 @@ import ApiError from '~/utils/ApiError'
 
 const authentication = async (req, res, next) => {
   const token = req.cookies?.accessToken
+  console.log('token', token)
 
   if (!token) {
     return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized (token not found)'))

@@ -13,20 +13,9 @@ import { CLOSE_DB, CONNECT_DB } from './config/mongodb.js'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware.js'
 import { APIs_V1 } from './routes/v1/index.js'
 import {
-  createCard,
-  createColumn,
-  deleteCard,
-  deleteColumn,
   handleSockerBoard,
   handleSocketCard,
   handleSocketColumn,
-  inviteToBoard,
-  requestJoinBoard,
-  responseJoinBoard,
-  updateCard,
-  updateColumn,
-  userJoinBoard,
-  userLeaveBoard
 } from './sockets/index.js'
 
 // --- EXPRESS ---

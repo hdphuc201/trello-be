@@ -98,7 +98,7 @@ const loginGoogle = async (req, res, next) => {
       maxAge: ms('14 days')
     })
     const getNewUser = await userModel.findOneById(user.insertedId)
-    return res.status(StatusCodes.OK).json(user)
+    return res.status(StatusCodes.OK).json(getNewUser)
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }
