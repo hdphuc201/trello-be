@@ -26,15 +26,15 @@ const login = async (req, res, next) => {
       httpOnly: true,
       secure: true,
       sameSite: 'None'
-      // maxAge: ms('14 days')
     })
 
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'None'
-      // maxAge: ms('14 days')
     })
+
+    console.log('result', result)
 
     return res.status(StatusCodes.OK).json(result)
   } catch (error) {
