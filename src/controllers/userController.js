@@ -25,15 +25,15 @@ const login = async (req, res, next) => {
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
-      maxAge: ms('14 days')
+      sameSite: 'None'
+      // maxAge: ms('14 days')
     })
 
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
-      maxAge: ms('14 days')
+      sameSite: 'None'
+      // maxAge: ms('14 days')
     })
 
     return res.status(StatusCodes.OK).json(result)
@@ -81,21 +81,21 @@ const loginGoogle = async (req, res, next) => {
 
     // if (env.COOKIE_MODE) {
     // } else {
-    //   res.clearCookie('refresh_token')
-    //   res.clearCookie('access_token')
+    //   res.clearCookie('refreshToken')
+    //   res.clearCookie('accessToken')
     // }
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
-      maxAge: ms('14 days')
+      sameSite: 'None'
+      // maxAge: ms('14 days')
     })
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'None',
-      maxAge: ms('14 days')
+      sameSite: 'None'
+      // maxAge: ms('14 days')
     })
     const getNewUser = await userModel.findOneById(user.insertedId)
     return res.status(StatusCodes.OK).json(getNewUser)

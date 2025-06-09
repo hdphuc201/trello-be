@@ -7,6 +7,7 @@ import { jwtService } from '~/providers/JwtProdiver'
 import ApiError from '~/utils/ApiError'
 
 const authentication = async (req, res, next) => {
+  console.log('req', req)
   const token = req.cookies?.accessToken
   console.log('token', token)
 
