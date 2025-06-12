@@ -7,14 +7,16 @@ import { jwtService } from '~/providers/JwtProdiver'
 import ApiError from '~/utils/ApiError'
 
 const authentication = async (req, res, next) => {
-  const token = req.cookies?.accessToken
-  console.log('token', token)
+  const token = env.COOKIE_MODE ? req.cookies?.accessToken : req.headers?.authorization?.split(' ')[1]
 
   if (!token) {
     return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized (token not found)'))
   }
   jwt.verify(token, env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
+    if (err && !env.COOKIE_MODE) {
+      return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token is not valid'))
+    }
+    if (err && env.COOKIE_MODE) {
       const refreshToken = req.cookies?.refreshToken
       if (!refreshToken) {
         return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized (refresh token not found)'))

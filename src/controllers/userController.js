@@ -20,23 +20,28 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const result = await userService.login(req.body)
+    const response = await userService.login(req.body)
+    const { token, ...rest } = response
+    const newResponse = env.COOKIE_MODE ? rest : response
 
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None'
-    })
+    if (env.COOKIE_MODE) {
+      res.cookie('refreshToken', token.refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None'
+      })
 
-    res.cookie('accessToken', result.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None'
-    })
+      res.cookie('accessToken', token.accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None'
+      })
+    } else {
+      res.clearCookie('refreshToken')
+      res.clearCookie('accessToken')
+    }
 
-    console.log('result', result)
-
-    return res.status(StatusCodes.OK).json(result)
+    return res.status(StatusCodes.OK).json(newResponse)
   } catch (error) {
     next(error)
   }
@@ -125,7 +130,7 @@ const logout = async (req, res, next) => {
 
 const refreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies?.refreshToken
+    const refreshToken = env.MODE_COOKIE ? req.cookies?.refreshToken : req.body.token
     const accessToken = await userService.refreshToken(refreshToken)
 
     res.cookie('accessToken', accessToken, {

@@ -47,7 +47,6 @@ const io = new Server(server, {
 
 // --- SOCKET.IO EVENTS ---
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id)
 
   handleSockerBoard(socket)
   handleSocketColumn(socket)

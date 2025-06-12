@@ -56,7 +56,7 @@ const getInvitationsForInvitee = async (userId) => {
   if (!invitations) {
     return []
   }
-  const resInvitations = invitations.map((invitation) => {
+  const resInvitations = invitations?.map((invitation) => {
     return {
       ...invitation,
       board: invitation.board[0] || {},

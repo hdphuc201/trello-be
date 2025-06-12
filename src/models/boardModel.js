@@ -142,18 +142,18 @@ const pushToBoard = async ({ type, column, boardId, userId }) => {
     let targetBoardId = null
 
     switch (type) {
-    case 'columnOrderIds':
-      pushObject = { columnOrderIds: new ObjectId(column._id) }
-      targetBoardId = column.boardId
-      break
+      case 'columnOrderIds':
+        pushObject = { columnOrderIds: new ObjectId(column._id) }
+        targetBoardId = column.boardId
+        break
 
-    case 'memberIds':
-      pushObject = { memberIds: new ObjectId(userId) }
-      targetBoardId = boardId
-      break
+      case 'memberIds':
+        pushObject = { memberIds: new ObjectId(userId) }
+        targetBoardId = boardId
+        break
 
-    default:
-      throw new Error('Invalid push type')
+      default:
+        throw new Error('Invalid push type')
     }
 
     const result = await GET_DB()
@@ -262,13 +262,16 @@ const getAll = async (userId, resQuery) => {
   }
 }
 
-const deleteBoard = async (boardId) => {
+const deleteBoard = async (userId, boardId) => {
   try {
     const result = await GET_DB()
       .collection(BOARD_COLLECTION_NAME)
       .deleteOne({ _id: new ObjectId(boardId) }, { returnDocument: 'after' })
 
-    const newBoardList = await GET_DB().collection(BOARD_COLLECTION_NAME).find({}).toArray()
+    const newBoardList = await GET_DB()
+      .collection(BOARD_COLLECTION_NAME)
+      .find({ ownerIds: { $all: [new ObjectId(userId)] } })
+      .toArray()
     return { success: true, result, boards: newBoardList }
   } catch (error) {
     throw new Error(error)

@@ -157,12 +157,12 @@ const moveCardToDifferentColumn = async (reqBody) => {
   }
 }
 
-const deleteBoard = async (boardId) => {
+const deleteBoard = async (userId, boardId) => {
   try {
     if (!boardId) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'BoardId not found')
     }
-    const res = await boardModel.deleteBoard(boardId)
+    const res = await boardModel.deleteBoard(userId, boardId)
 
     return res
   } catch (error) {

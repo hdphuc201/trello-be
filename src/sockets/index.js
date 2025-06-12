@@ -1,9 +1,12 @@
-// map để lưu các user đang tham gia theo từng board
-
 import { boardMembers } from './socketMapping'
 
 // board
 export const handleSockerBoard = (socket) => {
+  socket.on('update_board', (boardId) => {
+    if (!boardId) return
+    socket.to(boardId).emit('update_board', boardId)
+  })
+
   socket.on('invite_to_board', (invitation) => {
     socket.broadcast.emit('invite_to_board', invitation)
   })
@@ -21,13 +24,9 @@ export const handleSockerBoard = (socket) => {
       boardMembers.set(boardId, members)
     }
 
-    // console.log('👥 Current members:', members.map((m) => m.email))
-
     // Gửi event 'user_join_board' cho tất cả người trong room, bao gồm cả người vừa join
     socket.to(boardId).emit('user_join_board', { boardId, user })
-    // socket.emit('user_join_board', user) // gửi lại chính client vừa join
-    // Gửi danh sách thành viên cho người mới join (nếu muốn đồng bộ UI sidebar)
-    socket.emit('current_board_members', { boardId, members })
+    socket.emit('current_board_members', { boardId, members }) // Gửi danh sách thành viên cho người mới join (nếu muốn đồng bộ UI sidebar)
   })
 
   socket.on('user_leave_board', ({ boardId, user }) => {
@@ -79,7 +78,6 @@ export const handleSocketColumn = (socket) => {
 
   socket.on('update_column', (boardId) => {
     if (!boardId) return
-    // socket.broadcast.emit('update_column', boardId)
     socket.to(boardId).emit('update_column', boardId)
   })
 
@@ -102,7 +100,6 @@ export const handleSocketCard = (socket) => {
     if (!boardId) return
     socket.join(boardId)
     socket.to(boardId).emit('update_card', boardId)
-    // socket.broadcast.emit('update_card', card)
   })
 
   socket.on('update_activeCard', (updateCard) => {
@@ -113,7 +110,6 @@ export const handleSocketCard = (socket) => {
   socket.on('delete_card', (boardId) => {
     if (!boardId) return
     socket.join(boardId)
-    // socket.broadcast.emit('delete_card', boardId)
     socket.to(boardId).emit('delete_card', boardId)
   })
 }

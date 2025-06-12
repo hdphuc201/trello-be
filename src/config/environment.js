@@ -23,5 +23,6 @@ export const env = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 
   // login google
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  COOKIE_MODE: process.env.COOKIE_MODE === "true"
 }

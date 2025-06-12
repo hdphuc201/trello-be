@@ -63,8 +63,10 @@ const login = async (reqBody) => {
 
     return {
       ...pickUser(existUser),
-      accessToken,
-      refreshToken
+      token: {
+        accessToken,
+        refreshToken
+      }
     }
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
