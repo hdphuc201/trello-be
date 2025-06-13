@@ -1,5 +1,6 @@
 import { OAuth2Client } from 'google-auth-library'
 import { StatusCodes } from 'http-status-codes'
+import { x } from 'joi'
 import ms from 'ms'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -11,7 +12,6 @@ import ApiError from '~/utils/ApiError'
 
 const register = async (req, res, next) => {
   try {
-    console.log('pass controller register')
     const createUser = await userService.register(req.body)
     return res.status(StatusCodes.CREATED).json(createUser)
   } catch (error) {
@@ -48,12 +48,10 @@ const login = async (req, res, next) => {
   }
 }
 
-// chưa xong
 const loginGoogle = async (req, res, next) => {
   const { token } = req.body
   const client = new OAuth2Client(env.GOOGLE_CLIENT_ID)
 
-  console.log('token', token)
   try {
     if (!token) throw new ApiError(StatusCodes.NOT_FOUND, 'Token is not valid')
 
@@ -101,12 +99,16 @@ const loginGoogle = async (req, res, next) => {
         maxAge: ms('14 days')
       })
     } else {
+      user.token = {
+        accessToken,
+        refreshToken
+      }
+
       res.clearCookie('refreshToken')
       res.clearCookie('accessToken')
     }
     // const getNewUser = await userModel.findOneById(user.insertedId)
     user.isActive = true
-    console.log('user', user)
     return res.status(StatusCodes.OK).json(user)
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)

@@ -9,14 +9,11 @@ import ApiError from '~/utils/ApiError'
 const authentication = async (req, res, next) => {
   const token = env.COOKIE_MODE ? req.cookies?.accessToken : req.headers?.authorization?.split(' ')[1]
 
-  console.log('token authentication', token)
-  console.log('token req.headers', req.headers)
   if (!token) {
     return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized (token not found)'))
   }
   jwt.verify(token, env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err && !env.COOKIE_MODE) {
-      console.log('err', err)
       return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token is not valid'))
     }
     if (err && env.COOKIE_MODE) {
