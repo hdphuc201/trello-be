@@ -11,6 +11,7 @@ import ApiError from '~/utils/ApiError'
 
 const register = async (req, res, next) => {
   try {
+    console.log('pass controller register')
     const createUser = await userService.register(req.body)
     return res.status(StatusCodes.CREATED).json(createUser)
   } catch (error) {
@@ -84,26 +85,28 @@ const loginGoogle = async (req, res, next) => {
     const accessToken = jwtService.generateAccessToken(user)
     const refreshToken = jwtService.generateRefreshToken(user)
 
-    // if (env.COOKIE_MODE) {
-    // } else {
-    //   res.clearCookie('refreshToken')
-    //   res.clearCookie('accessToken')
-    // }
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None'
-      // maxAge: ms('14 days')
-    })
+    if (env.COOKIE_MODE) {
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        maxAge: ms('14 days')
+      })
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None'
-      // maxAge: ms('14 days')
-    })
-    const getNewUser = await userModel.findOneById(user.insertedId)
-    return res.status(StatusCodes.OK).json(getNewUser)
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        maxAge: ms('14 days')
+      })
+    } else {
+      res.clearCookie('refreshToken')
+      res.clearCookie('accessToken')
+    }
+    // const getNewUser = await userModel.findOneById(user.insertedId)
+    user.isActive = true
+    console.log('user', user)
+    return res.status(StatusCodes.OK).json(user)
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }

@@ -11,6 +11,7 @@ const register = async (req, res, next) => {
   })
   try {
     await correctCondition.validateAsync(req.body, { abortEarly: false })
+
     next()
   } catch (error) {
     const errorMessage = new Error(error).message

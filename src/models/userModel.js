@@ -18,10 +18,10 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   username: Joi.string().required().trim().strict(),
   displayName: Joi.string().required().trim().strict(),
   avatar: Joi.string().default(null),
+  googleId: Joi.string().default(null),
   role: Joi.string()
     .valid(...Object.values(USER_ROLES))
     .default(USER_ROLES.CLIENT),
-
   isActive: Joi.boolean().default(false),
   verifyToken: Joi.string(),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -38,6 +38,7 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
+    // console.log('validData', validData)
     const createdUser = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validData)
     return createdUser
   } catch (error) {
