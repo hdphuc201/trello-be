@@ -16,6 +16,7 @@ const authentication = async (req, res, next) => {
   }
   jwt.verify(token, env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err && !env.COOKIE_MODE) {
+      console.log('err', err)
       return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Token is not valid'))
     }
     if (err && env.COOKIE_MODE) {
