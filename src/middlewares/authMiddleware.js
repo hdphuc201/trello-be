@@ -9,6 +9,8 @@ import ApiError from '~/utils/ApiError'
 const authentication = async (req, res, next) => {
   const token = env.COOKIE_MODE ? req.cookies?.accessToken : req.headers?.authorization?.split(' ')[1]
 
+  console.log('token authentication', token)
+  console.log('token req.headers', req.headers)
   if (!token) {
     return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized (token not found)'))
   }

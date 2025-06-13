@@ -53,6 +53,7 @@ const loginGoogle = async (req, res, next) => {
   const { token } = req.body
   const client = new OAuth2Client(env.GOOGLE_CLIENT_ID)
 
+  console.log('token', token)
   try {
     if (!token) throw new ApiError(StatusCodes.NOT_FOUND, 'Token is not valid')
 

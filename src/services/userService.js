@@ -32,7 +32,6 @@ const register = async (reqBody) => {
     const createdUser = await userModel.createNew(newUser)
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
-    console.log('getNewUser', getNewUser)
     // gửi mail xác thực tài khoản
     const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
     const customObject = 'Trello: Please verify your email before using our service. '
