@@ -12,11 +12,7 @@ import { env } from './config/environment.js'
 import { CLOSE_DB, CONNECT_DB } from './config/mongodb.js'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware.js'
 import { APIs_V1 } from './routes/v1/index.js'
-import {
-  handleSockerBoard,
-  handleSocketCard,
-  handleSocketColumn,
-} from './sockets/index.js'
+import { handleSockerBoard, handleSocketCard, handleSocketColumn } from './sockets/index.js'
 
 // --- EXPRESS ---
 const app = express()
@@ -35,9 +31,13 @@ app.use('/uploads', express.static(path.resolve('uploads')))
 
 app.use(express.json())
 
+app.use(express.static(path.resolve('dist')))
+
 app.use('/v1', APIs_V1)
 app.use(errorHandlingMiddleware)
-
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve('dist', 'index.html'))
+})
 // --- HTTP + SOCKET.IO ---
 // tạo server mới bọc thằng app của express để làm real-time vói Socket.IO
 const server = http.createServer(app)
@@ -47,7 +47,6 @@ const io = new Server(server, {
 
 // --- SOCKET.IO EVENTS ---
 io.on('connection', (socket) => {
-
   handleSockerBoard(socket)
   handleSocketColumn(socket)
   handleSocketCard(socket)
