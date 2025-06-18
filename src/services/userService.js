@@ -9,6 +9,7 @@ import { jwtService } from '~/providers/JwtProdiver'
 import ApiError from '~/utils/ApiError'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { pickUser } from '~/utils/formatters'
+import { sendVerifyEmail } from '~/helpers/emailService'
 
 const register = async (reqBody) => {
   const { password, email } = reqBody
@@ -17,8 +18,7 @@ const register = async (reqBody) => {
     if (existUser) {
       throw new ApiError(StatusCodes.CONFLICT, 'Email already exists')
     }
-    //  tạo mảng lưu vào database
-    // hdphuc201@gmail.com => ['hdphuc201', 'gmail.com'] => hdphuc201
+
     const emailParts = email.split('@')[0]
     const passwordHash = await bcrypt.hash(password, 10)
     const newUser = {
@@ -32,21 +32,22 @@ const register = async (reqBody) => {
     const createdUser = await userModel.createNew(newUser)
     const getNewUser = await userModel.findOneById(createdUser.insertedId)
 
-    // gửi mail xác thực tài khoản
+    // tạo link xác nhận
     const verificationLink = `${WEBSITE_DOMAIN}/account/verification?email=${getNewUser.email}&token=${getNewUser.verifyToken}`
-    const customObject = 'Trello: Please verify your email before using our service. '
+    const subject = 'Trello Clone: Verify Your Email'
+    const htmlContent = `
+      <h2>Hello ${getNewUser.displayName}!</h2>
+      <p>Thank you for registering. Please confirm your email by clicking the link below:</p>
+      <a href="${verificationLink}" target="_blank" style="color:blue">Verify your email</a>
+      <p>If you didn’t sign up, just ignore this email.</p>
+    `
 
-    const htmlConent = `
-    <h1>Welcome to our service!</h1>
-    <p>Click to verify: ${verificationLink}</p>
-  `
-    await BrevoProvider.sendEmail(getNewUser.email, customObject, htmlConent)
+    await sendVerifyEmail(getNewUser.email, subject, htmlContent)
     return pickUser(getNewUser)
   } catch (error) {
     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, error.message)
   }
 }
-
 const login = async (reqBody) => {
   const { password, email } = reqBody
   try {

@@ -24,5 +24,9 @@ export const env = {
 
   // login google
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  COOKIE_MODE: process.env.COOKIE_MODE === "true"
+  COOKIE_MODE: process.env.COOKIE_MODE === 'true',
+
+  // gmail
+  GMAIL_USER: process.env.GMAIL_USER,
+  GMAIL_PASS: process.env.GMAIL_PASS
 }
