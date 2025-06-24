@@ -64,8 +64,8 @@ app.get('/test', (req, res) => {
 // --- START SERVER ---
 const START_SERVER = () => {
   const port = env.BUILD_MODE === 'production' ? process.env.PORT : env.LOCAL_DEV_APP_PORT
-  const host = env.BUILD_MODE === 'production' ? undefined : env.LOCAL_DEV_APP_HOST
-
+  const host = env.BUILD_MODE === 'production' ? '0.0.0.0' : env.LOCAL_DEV_APP_HOST
+  // Khi chạy trong production (docker), host cần là '0.0.0.0'
   // dùng server.listen() để lắng nghe kết nối từ client, // vì đã bọc app vào server mới tạo ở trên
   server.listen(port, host, () => {
     console.log(
