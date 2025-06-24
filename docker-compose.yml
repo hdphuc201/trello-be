@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trello_be
+    image: trello_be:latest
+    ports:
+      - "8017:8017"
+    #  Prioritize docker compose + environment: (easy to configure).
+    environment:
+      MONGO_URL: ${MONGO_URL}
+      DATABASE_NAME: ${DATABASE_NAME}
+      LOCAL_DEV_APP_PORT: ${LOCAL_DEV_APP_PORT}
+      AUTHOR: ${AUTHOR}
+      WEBSITE_DOMAIN_DEVELOPMENT: ${WEBSITE_DOMAIN_DEVELOPMENT}
+      WEBSITE_DOMAIN_PRODUCTION: ${WEBSITE_DOMAIN_PRODUCTION}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      ADMIN_EMAIL_ADDRESS: ${ADMIN_EMAIL_ADDRESS}
+      ADMIN_EMAIL_NAME: ${ADMIN_EMAIL_NAME}
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      COOKIE_MODE: ${COOKIE_MODE}
+      GMAIL_USER: ${GMAIL_USER}
+      GMAIL_PASS: ${GMAIL_PASS}
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
